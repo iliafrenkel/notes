@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Notes</title>
+        <link rel="shortcut icon" href="/res/images/logo.ico" />
+        <link rel="stylesheet" href="/res/css/main.css" />
+        <script type="text/javascript" src="/res/js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="/res/js/knockout-2.1.0.js"></script>
+        <script type="text/javascript" src="/res/js/model.noteslist.js"></script>
+        <script>
+            $(document).ready(function(){
+                $("#root").on("click", "a.zoom-in-link", function(ev){
+                    var self = $(this).parent();
+                    self.hide("fast");
+                    $(".top-level > div").unwrap();
+
+                    $("#breadcrumbs .nav").remove();
+                    $.each(self.parents(".note"), function(idx, val) {
+                        var h = "#" + val.id;
+                        var t = $.trim($(h + " > .content").text());
+                        $('<a href="' + h + '" />').addClass("nav").text(t).prependTo($("#breadcrumbs-nav"));
+                    });
+                    var t = $.trim($(self).find(" > .content").text());
+                    $("<span />").addClass("nav").text(t).appendTo($("#breadcrumbs"));
+                    self.wrap('<div class="top-level" />');
+                    self.show("fast");
+                    //open if closed
+                    if (self.hasClass("closed")) toggleOpen($(this).parent().find(" > .open-link"));
+                });
+                
+                $("#breadcrumbs").on("click", "a", function(){
+                    var elId = this.hash;
+                    if (elId == "") {
+                        var topEl = $(".top-level > div");
+                        topEl.unwrap();
+                        $(".note").hide();
+                        $("#breadcrumbs .nav").remove();
+                        $(".note").show("fast");
+                    } else {
+                        var brCr = $("#breadcrumbs .nav");
+                        var i = brCr.length-1;
+                        do {
+                            var h = brCr[i].hash;
+                            $(brCr[i]).remove();
+                            i--;
+                        } while (h != elId);
+                        $("<span />").addClass("nav").text($.trim($(brCr[++i].hash+" > .content").text())).appendTo($("#breadcrumbs"));
+                        var topEl = $(".top-level > div");
+                        topEl.unwrap();
+                        $(elId).hide();
+                        $(elId).wrap('<div class="top-level" />');
+                        $(elId).show("fast");
+                    }
+                });
+                
+                var notesList = new NotesListViewModel();
+                ko.applyBindings(notesList, document.getElementById("root"));
+                $.each(gNotes, function(idx, val) {
+                    notesList.addNote(val);
+                });
+            });
+            var gNotes = [{
+                id : "n1",
+                content: "Well, the way they make shows is, they make one show.",
+                subnotes: [{
+                    id : "n2",
+                    content: "That show's called a pilot.",
+                    subnotes: [{
+                        id : "n3",
+                        content: "Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
+                        subnotes: []
+                    }, {
+                        id : "n4",
+                        content: "Then they show that show to the people who make shows...",
+                        subnotes: [{
+                            id : "n5",
+                            content: "... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
+                            subnotes: [{
+                                id : "n8",
+                                content: "This is the end my friend, the end...",
+                                subnotes: []
+                            }]
+                        }]
+                    }]
+                }, {
+                    id : "n6",
+                    content: "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
+                    subnotes: [{
+                        id : "n7",
+                        content: "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
+                        subnotes: []
+                    }]
+                }]
+            }];
+        </script>
+        <!-- NOTES TEMPLATE -->
+        <script type="text/html" id="note-template">
+            <div class="note" data-bind="attr: {id: id}, css: {closed: isClosed}">
+                <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes, click: toggleOpen, text: isClosed() ? '+' : '-'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}">•</a>
+                <div class="content" data-bind="text: content"></div>
+                <!--div class="task-content" style="padding:2px 10px" data-bind="text: notes, event: {keypress: onContentChange}, attr:{contenteditable: inEdit}"></div-->
+                <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes}"></div>
+            </div>
+        </script>
+        <!-- END OF NOTES TEMPLATE -->
+    </head>
+    <body>
+        <div id="breadcrumbs">
+            <a href="#" style="float:left">Home</a>
+            <div id="breadcrumbs-nav"></div>
+        </div>
+        <div id="root" data-bind="template: {name: 'note-template', foreach: notes}">
+            <!--div class="note closed" id="n1">
+                <a href="javascript:void(0)" class="open-link">+</a><a href="#n1" class="zoom-in-link">•</a>
+                <div class="content">Well, the way they make shows is, they make one show.</div>
+                <div class="sub-note closed" id="n2">
+                    <a href="javascript:void(0)" class="open-link">+</a><a href="#n2" class="zoom-in-link">•</a>
+                    <div class="content">That show's called a pilot.</div>
+                    <div class="sub-note closed" id="n3">
+                        <a href="#n3" class="zoom-in-link">•</a>
+                        <div class="content">Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.</div>
+                    </div>             
+                    <div class="sub-note closed" id="n4">
+                        <a href="javascript:void(0)" class="open-link">+</a><a href="#n4" class="zoom-in-link">•</a>
+                        <div class="content">Then they show that show to the people who make shows...</div>
+                        <div class="sub-note closed" id="n5">
+                            <a href="#n5" class="zoom-in-link">•</a>
+                            <div class="content">... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-note closed" id="n6">
+                    <a href="javascript:void(0)" class="open-link">+</a><a href="#n6" class="zoom-in-link">•</a>
+                    <div class="content">The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.</div>
+                    <div class="sub-note" id="n7">
+                        <a href="#n7" class="zoom-in-link">•</a>
+                        <div class="content">Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.</div>
+                    </div>
+                </div>
+            </div-->
+<!--
+            <div class="task-list closed" id="tl2">
+                <a href="javascript:void(0)" class="open-link">+</a><a href="#tl2" class="zoom-in-link">•</a>
+                <div class="content">Do you see any Teletubbies in here?</div>
+                <div class="task closed" id="t2">
+                    <a href="javascript:void(0)" class="open-link">+</a><a href="#t2" class="zoom-in-link">•</a>
+                    <div class="content">Do you see a slender plastic tag clipped to my shirt with my name printed on it?</div>
+                    <div class="sub-task" id="t2-1">
+                        <a href="#t2-1" class="zoom-in-link">•</a>
+                        <div class="content">Do you see a little Asian child with a blank expression on his face sitting outside on a mechanical helicopter that shakes when you put quarters in it?</div>
+                    </div>             
+                </div>             
+            </div>
+            <div class="task-list closed" id="tl3">
+                <a href="#tl3" class="zoom-in-link">•</a>
+                <div class="content">Courtesy of <a href="http://slipsum.com" target="_new">lorem ipsum</a></div>
+            </div>
+-->
+        </div>
+        <div id="footer">&copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.</div>
+    </body>
+</html>
