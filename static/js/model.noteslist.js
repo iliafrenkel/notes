@@ -47,7 +47,7 @@ function NoteModel(data) {
     });
 
     /**
-     * Task model methods.
+     * Note model methods.
      */
     /**
      * @method
