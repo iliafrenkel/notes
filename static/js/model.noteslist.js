@@ -37,7 +37,8 @@ function NoteModel(data) {
                         return "#" + self.id(); 
                        }, self);
     self.isOpen      = ko.observable(data.isOpen || false);
-    //add subnotes creating new instances of NoteModel if neccessary
+    self.isInEdit    = ko.observable(false);
+    //add subnotes creating new instances of NoteModel if necessary
     $.each(data.subnotes || [], function(idx, val) {
         if (val instanceof NoteModel) {
             self.subnotes.push(val);
@@ -51,11 +52,18 @@ function NoteModel(data) {
      */
     /**
      * @method
-     * Togles a note state between open (expanded) and closed (collapsed).
+     * Toggles a note state between open (expanded) and closed (collapsed).
      */
     self.toggleOpen = function() {
         var self = this;
         self.isOpen(!self.isOpen());
+    };
+    /**
+     * @method
+     * Set the note into edit mode. 
+     */
+    self.startEdit = function() {
+        self.isInEdit(true);  
     };
 };
 

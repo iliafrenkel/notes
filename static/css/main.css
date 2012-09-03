@@ -81,6 +81,15 @@ a:hover {
 .content {
     position: relative;
 }
+textarea.content {
+	width: 100%;
+	border: none;
+	font: inherit;
+	outline: none;
+	margin: 0;
+	padding: 0;
+	resize: none;
+}
 .closed > .note, .closed > .sub-notes {
     display: none !important;
 }

@@ -56,7 +56,8 @@
         <script type="text/html" id="note-template">
             <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
                 <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes, click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: $root.zoomIn">•</a>
-                <div class="content" data-bind="text: content"></div>
+                <div class="content" data-bind="text: content, visible: !isInEdit(), event: {click: startEdit}"></div>
+                <textarea class="content" data-bind="visible: isInEdit, value: content, hasfocus: isInEdit"></textarea>
                 <!--div class="task-content" style="padding:2px 10px" data-bind="text: notes, event: {keypress: onContentChange}, attr:{contenteditable: inEdit}"></div-->
                 <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes}"></div>
             </div>
@@ -75,7 +76,7 @@
     </head>
     <body>
         <div id="content">
-            <div id="breadcrumbs">
+            <div id="breadcrumbs" data-bind="visible: $root.breadcrumbs().length > 0">
                 <a href="#" style="float:left" data-bind="click: $root.zoomOut">Home</a>
                 <div id="breadcrumbs-nav" data-bind="template: {name: 'breadcrumbs-template', foreach: breadcrumbs}"></div>
             </div>
