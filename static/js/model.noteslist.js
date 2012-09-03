@@ -30,21 +30,32 @@ function NoteModel(data) {
     self.id          = ko.observable(data.id);
     self.content     = ko.observable(data.content);
     self.subnotes    = ko.observableArray([]);
-    self.hasSubnotes = ko.computed(function() { return self.subnotes().length > 0; }, self);
-    self.hash        = ko.computed(function() { return "#" + self.id(); }, self);
-    
-    self.isClosed    = ko.observable(data.isClosed || true);
-    
-    $.each(data.subnotes, function(idx, val) {
-        self.subnotes.push(new NoteModel(val));
+    self.hasSubnotes = ko.computed(function() {
+                        return self.subnotes().length > 0;
+                       }, self);
+    self.hash        = ko.computed(function() {
+                        return "#" + self.id(); 
+                       }, self);
+    self.isOpen      = ko.observable(data.isOpen || false);
+    //add subnotes creating new instances of NoteModel if neccessary
+    $.each(data.subnotes || [], function(idx, val) {
+        if (val instanceof NoteModel) {
+            self.subnotes.push(val);
+        } else {
+            self.subnotes.push(new NoteModel(val));
+        };
     });
 
     /**
      * Task model methods.
      */
+    /**
+     * @method
+     * Togles a note state between open (expanded) and closed (collapsed).
+     */
     self.toggleOpen = function() {
         var self = this;
-        self.isClosed(!self.isClosed());
+        self.isOpen(!self.isOpen());
     };
 };
 
@@ -56,15 +67,62 @@ function NoteModel(data) {
  */
 function NotesListViewModel(data) {
     var self = this;
-    self.notes = ko.observableArray([]);
     /**
      * NotesListView model properties.
      */
+    self.notes = ko.observableArray([]);
+    self.breadcrumbs = ko.observableArray([]);
 
     /**
      * NotesListView model methods.
      */
-    self.addNote = function(data) {
-        self.notes.push(new NoteModel(data));
+    /**
+     * @method
+     * Add a new note to the list.
+     */
+    self.addNote = function(note) {
+        self.notes.push(new NoteModel(note));
     };
+    /**
+     * @method
+     * Zoom in to a note.
+     */
+    self.zoomIn = function(data, event) {
+        var note;
+        if (data instanceof NoteModel) {
+            note = data;
+        } else {
+            note = data.note;
+        }
+        var noteEl = $("#" + note.id()); //note DIV
+        //hide the note
+        noteEl.hide("fast");
+        //"un-zoom" previously zoomed in note
+        $(".top-level > div").unwrap();
+        //update breadcrumbs
+        self.breadcrumbs.removeAll();
+        $.each(noteEl.parents(".note"), function(idx, val) {
+            var h = "#" + val.id;
+            var t = $.trim($(h + " > .content").text());
+            var n = ko.dataFor(val);
+            self.breadcrumbs.unshift({hash:h,text:t,note:n});
+        });
+        //add the note to breadcrumbs
+        self.breadcrumbs.push({hash:null,text:note.content()});        
+        //"zoom" in to the note
+        noteEl.wrap('<div class="top-level" />');
+        noteEl.show("fast");
+        //expand self if needed
+        if (!note.isOpen()) note.toggleOpen();
+    };
+    /**
+     * @method
+     * Zoom out of a note to the root
+     */
+    self.zoomOut = function() {
+        self.breadcrumbs.removeAll();
+        $(".note").hide();
+        $(".top-level > div").unwrap();
+        $(".note").show("fast");
+    }
 };

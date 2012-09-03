@@ -10,52 +10,8 @@
         <script type="text/javascript" src="/res/js/model.noteslist.js"></script>
         <script>
             $(document).ready(function(){
-                $("#root").on("click", "a.zoom-in-link", function(ev){
-                    var self = $(this).parent();
-                    self.hide("fast");
-                    $(".top-level > div").unwrap();
-
-                    $("#breadcrumbs .nav").remove();
-                    $.each(self.parents(".note"), function(idx, val) {
-                        var h = "#" + val.id;
-                        var t = $.trim($(h + " > .content").text());
-                        $('<a href="' + h + '" />').addClass("nav").text(t).prependTo($("#breadcrumbs-nav"));
-                    });
-                    var t = $.trim($(self).find(" > .content").text());
-                    $("<span />").addClass("nav").text(t).appendTo($("#breadcrumbs"));
-                    self.wrap('<div class="top-level" />');
-                    self.show("fast");
-                    //open if closed
-                    if (self.hasClass("closed")) toggleOpen($(this).parent().find(" > .open-link"));
-                });
-                
-                $("#breadcrumbs").on("click", "a", function(){
-                    var elId = this.hash;
-                    if (elId == "") {
-                        var topEl = $(".top-level > div");
-                        topEl.unwrap();
-                        $(".note").hide();
-                        $("#breadcrumbs .nav").remove();
-                        $(".note").show("fast");
-                    } else {
-                        var brCr = $("#breadcrumbs .nav");
-                        var i = brCr.length-1;
-                        do {
-                            var h = brCr[i].hash;
-                            $(brCr[i]).remove();
-                            i--;
-                        } while (h != elId);
-                        $("<span />").addClass("nav").text($.trim($(brCr[++i].hash+" > .content").text())).appendTo($("#breadcrumbs"));
-                        var topEl = $(".top-level > div");
-                        topEl.unwrap();
-                        $(elId).hide();
-                        $(elId).wrap('<div class="top-level" />');
-                        $(elId).show("fast");
-                    }
-                });
-                
                 var notesList = new NotesListViewModel();
-                ko.applyBindings(notesList, document.getElementById("root"));
+                ko.applyBindings(notesList, document.getElementById("content"));
                 $.each(gNotes, function(idx, val) {
                     notesList.addNote(val);
                 });
@@ -63,9 +19,11 @@
             var gNotes = [{
                 id : "n1",
                 content: "Well, the way they make shows is, they make one show.",
+                isOpen: true,
                 subnotes: [{
                     id : "n2",
                     content: "That show's called a pilot.",
+                    isOpen: false,
                     subnotes: [{
                         id : "n3",
                         content: "Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
@@ -96,21 +54,34 @@
         </script>
         <!-- NOTES TEMPLATE -->
         <script type="text/html" id="note-template">
-            <div class="note" data-bind="attr: {id: id}, css: {closed: isClosed}">
-                <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes, click: toggleOpen, text: isClosed() ? '+' : '-'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}">•</a>
+            <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
+                <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes, click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: $root.zoomIn">•</a>
                 <div class="content" data-bind="text: content"></div>
                 <!--div class="task-content" style="padding:2px 10px" data-bind="text: notes, event: {keypress: onContentChange}, attr:{contenteditable: inEdit}"></div-->
                 <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes}"></div>
             </div>
         </script>
         <!-- END OF NOTES TEMPLATE -->
+        <!-- BREADCRUMBS TEMPLATE -->
+        <script type="text/html" id="breadcrumbs-template">
+            <!-- ko if: hash -->
+            <a href="#" class="nav" data-bind="attr: {href:hash, title:text}, text: text, click: $root.zoomIn"></a>
+            <!-- /ko -->
+            <!-- ko ifnot: hash -->
+            <span class="nav" data-bind="attr: {title:text}, text: text"></span>
+            <!-- /ko -->
+        </script>
+        <!-- END OF BREADCRUMBS TEMPLATE -->
     </head>
     <body>
-        <div id="breadcrumbs">
-            <a href="#" style="float:left">Home</a>
-            <div id="breadcrumbs-nav"></div>
+        <div id="content">
+            <div id="breadcrumbs">
+                <a href="#" style="float:left" data-bind="click: $root.zoomOut">Home</a>
+                <div id="breadcrumbs-nav" data-bind="template: {name: 'breadcrumbs-template', foreach: breadcrumbs}"></div>
+            </div>
+            <div id="root" data-bind="template: {name: 'note-template', foreach: notes}">
+            </div>
         </div>
-        <div id="root" data-bind="template: {name: 'note-template', foreach: notes}"></div>
         <div id="footer">&copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.</div>
     </body>
 </html>
