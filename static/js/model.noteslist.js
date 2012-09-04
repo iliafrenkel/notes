@@ -70,8 +70,38 @@ function NoteModel(data) {
      * React on user input.
      */
     self.onUserInput = function(note, event) {
-        if (event.which == 13) {
-            notesList.newNote(null);
+        if (event.which == 13) { //enter or shift+enter
+            if (event.shiftKey) {
+                var n = new NoteModel({});
+                self.subnotes.push(n);
+                if (!self.isOpen()) self.toggleOpen();
+                n.startEdit();
+            } else {
+                var parent = ko.contextFor(event.target).$parent;
+                if (parent instanceof NoteModel) {
+                    var n = new NoteModel({});
+                    var i = parent.subnotes.indexOf(note);
+                    parent.subnotes.splice(i+1, 0, n);
+                    n.startEdit();
+                } else {
+                    var n = new NoteModel({});
+                    var i = parent.notes.indexOf(note);
+                    parent.notes.splice(i+1, 0, n);
+                    n.startEdit();
+                }
+            }
+        } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) { //key down
+            var el = $(event.target);
+            var nextEl = el.nextInDocument(".content:visible");
+            if (nextEl[0]) {
+                ko.dataFor(nextEl[0]).startEdit();
+            }
+        } else if ((event.which == 38) && (event.target.selectionEnd==0)) { //key up
+            var el = $(event.target).parents(".note");
+            var prevEl = el.closest(".content:visible");
+            if (prevEl[0]) {
+                ko.dataFor(prevEl[0]).startEdit();
+            }
         } else {
             return true;
         }

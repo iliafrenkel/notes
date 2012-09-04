@@ -15,11 +15,37 @@
                 };
                 return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
             };
+            (function($) {
+			    function nextNode(node, omitChildren) {
+			        var sibling, parentNode;
+			        if (!omitChildren && node.hasChildNodes()) {
+			            return node.firstChild;
+			        } else {
+			            sibling = node.nextSibling;
+			            if (sibling) {
+			                return sibling;
+			            } else {
+			                parentNode = node.parentNode;
+			                return parentNode ? nextNode(parentNode, true) : null;
+			            }
+			        }
+			    }
+			
+			    $.fn.nextInDocument = function(selector) {
+			        var node = this[0], $node;
+			        while ( (node = nextNode(node)) ) {
+			            $node = $(node);
+			            if ($node.is(selector)) {
+			                return $node;
+			            }
+			        }
+			        return null;
+			    }
+			})(jQuery);
         </script>
         <script>
-            var notesList;
             $(document).ready(function(){
-                notesList = new NotesListViewModel();
+                var notesList = new NotesListViewModel();
                 ko.applyBindings(notesList, document.getElementById("content"));
                 $.each(gNotes, function(idx, val) {
                     notesList.addNote(val);
