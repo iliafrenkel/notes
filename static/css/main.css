@@ -78,6 +78,7 @@ a:hover {
 }
 .content {
     position: relative;
+    min-height: 1em;
 }
 textarea.content {
     position: absolute;

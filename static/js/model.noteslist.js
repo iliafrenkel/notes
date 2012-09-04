@@ -27,8 +27,8 @@ function NoteModel(data) {
     /**
      * Note model properties.
      */
-    self.id          = ko.observable(data.id);
-    self.content     = ko.observable(data.content);
+    self.id          = ko.observable(data.id || rndId());
+    self.content     = ko.observable(data.content || "");
     self.subnotes    = ko.observableArray([]);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
@@ -65,6 +65,17 @@ function NoteModel(data) {
     self.startEdit = function() {
         self.isInEdit(true);  
     };
+    /**
+     * @method
+     * React on user input.
+     */
+    self.onUserInput = function(note, event) {
+        if (event.which == 13) {
+            notesList.newNote(null);
+        } else {
+            return true;
+        }
+    };
 };
 
 /**
@@ -90,6 +101,19 @@ function NotesListViewModel(data) {
      */
     self.addNote = function(note) {
         self.notes.push(new NoteModel(note));
+    };
+    /**
+     * @method
+     * Create an empty note and add it to the list.
+     */
+    self.newNote = function(parent) {
+        var n = new NoteModel({});
+        if (parent instanceof NoteModel) {
+            parent.subnotes.push(n);
+        } else {
+            self.notes.push(n);
+        };
+        n.startEdit();
     };
     /**
      * @method

@@ -8,9 +8,18 @@
         <script type="text/javascript" src="/res/js/jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="/res/js/knockout-2.1.0.js"></script>
         <script type="text/javascript" src="/res/js/model.noteslist.js"></script>
+        <script type="text/javascript">
+            function rndId() {
+                var S4 = function() {
+                   return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+                };
+                return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+            };
+        </script>
         <script>
+            var notesList;
             $(document).ready(function(){
-                var notesList = new NotesListViewModel();
+                notesList = new NotesListViewModel();
                 ko.applyBindings(notesList, document.getElementById("content"));
                 $.each(gNotes, function(idx, val) {
                     notesList.addNote(val);
@@ -59,9 +68,10 @@
                 <div class="editor" style="position:relative">
                     <!--div class="content" data-bind="text: content, visible: !isInEdit(), event: {click: startEdit}"></div-->
                     <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
-                    <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit"></textarea>
+                    <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
                 </div>
                 <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes}"></div>
+                <!--div><a href="javascript:void(0)" data-bind="click: $root.newNote">New</a></div-->
             </div>
         </script>
         <!-- END OF NOTES TEMPLATE -->
@@ -84,6 +94,7 @@
             </div>
             <div id="root" data-bind="template: {name: 'note-template', foreach: notes}">
             </div>
+            <!--div><a href="javascript:void(0)" data-bind="click: $root.newNote">New</a></div-->
         </div>
         <div id="footer">&copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.</div>
     </body>
