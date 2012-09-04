@@ -97,14 +97,33 @@ function NoteModel(data) {
                 ko.dataFor(nextEl[0]).startEdit();
             }
         } else if ((event.which == 38) && (event.target.selectionEnd==0)) { //key up
-            var el = $(event.target).parents(".note");
-            var prevEl = el.closest(".content:visible");
-            if (prevEl[0]) {
-                ko.dataFor(prevEl[0]).startEdit();
-            }
+            var parents = ko.contextFor(event.target).$parents;
+            var p = parents.length;
+            for (var p = 0;p<parents.length;p++) {
+                if (parents[p] instanceof NoteModel) {
+                    var i = parents[p].subnotes.indexOf(note);
+                    if (parents[p].subnotes()[i-1]) {
+                        parents[p].subnotes()[i-1].startEdit();
+                        break;
+                    } else {
+                        if (parents[p].hasSubnotes()) {
+                            parents[p].subnotes()[parents[p].subnotes.length-1].startEdit();
+                        } else {
+                            parents[p].startEdit();
+                        }
+                        break;
+                    }
+                } else {
+                    var i = parents[p].notes.indexOf(note);
+                    if (parents[p].notes()[i-1]) {
+                        parents[p].notes()[i-1].startEdit();
+                        break;
+                    };
+                };
+            };
         } else {
             return true;
-        }
+        };
     };
 };
 
