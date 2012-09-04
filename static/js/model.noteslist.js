@@ -110,9 +110,9 @@ function NotesListViewModel(data) {
         //update breadcrumbs
         self.breadcrumbs.removeAll();
         $.each(noteEl.parents(".note"), function(idx, val) {
-            var h = "#" + val.id;
-            var t = $.trim($(h + " > .content").text());
             var n = ko.dataFor(val);
+            var h = "#" + n.id();
+            var t = n.content();
             self.breadcrumbs.unshift({hash:h,text:t,note:n});
         });
         //add the note to breadcrumbs
