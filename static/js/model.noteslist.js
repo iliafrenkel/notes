@@ -73,7 +73,7 @@ function NoteModel(data) {
         if (event.which == 13) { //enter or shift+enter
             if (event.shiftKey) {
                 var n = new NoteModel({});
-                self.subnotes.push(n);
+                self.subnotes.unshift(n);
                 if (!self.isOpen()) self.toggleOpen();
                 n.startEdit();
             } else {

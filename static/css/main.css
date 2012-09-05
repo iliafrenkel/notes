@@ -1,6 +1,8 @@
 body {
     font-family: Georgia, "Times New Roman", Georgia, Serif;
-    font-size: 1.3em;
+    /*font-family: Consolas, "Lucida Console", Monospace;*/ 
+    /*font-family: Calibri, Arial, Sans-Serif;*/
+    font-size: 19px;
     color: #666;
     background-color: #f2f2f2;
     vertical-align: baseline;
@@ -116,10 +118,9 @@ textarea.content {
     padding: 20px;
     overflow: auto;
     z-index: 103;
-    font-size: 1.25em;
 }
 .top-level > .note {
-    font-size: 1em;
+    font-size: 21px;
 }
 .top-level > div > a.zoom-in-link, .top-level > div > a.open-link {
     display: none;
@@ -199,4 +200,9 @@ a.zoom-in-link:hover {
     text-decoration: none;
     color: #4D90FE;
     background-color: #ddd;
+}
+.ui-sortable-placeholder {
+    border: solid 1px #ccc;
+    background-color: #ccf;
+    min-height: 4px;
 }
