@@ -201,8 +201,9 @@ a.zoom-in-link:hover {
     color: #4D90FE;
     background-color: #ddd;
 }
-.ui-sortable-placeholder {
-    border: solid 1px #ccc;
-    background-color: #ccf;
-    min-height: 4px;
+.droppable {
+	border-bottom: solid 2px #4D90FE;
+}
+.droppable > .editor {
+	background-color:#F2F2FF;
 }

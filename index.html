@@ -18,6 +18,40 @@
             };
         </script>
         <script>
+        	function setupDragDrop (elements, data) {
+            	$(elements).filter(".note").draggable({
+					axis: 'y',
+					handle: '> div.content',
+					revert: true,
+					scope: 'notes',
+					stack: '.note',
+					zindex: 10000,
+					delay: 200
+               	});
+               	$(elements).filter(".note").droppable({
+               		hoverClass: 'droppable',
+               		greedy: true,
+					scope: 'notes',
+					tolerance: 'pointer',
+					drop: function(event, ui) {
+						var receivingNote = ko.dataFor(this);
+						var droppedNote   = ko.dataFor(ui.draggable[0]);
+						var droppedNoteParent = ko.contextFor(ui.draggable[0]).$parent;
+						//remove note from original place
+						if (droppedNoteParent instanceof NoteModel) {
+							var i = droppedNoteParent.subnotes.indexOf(droppedNote);
+							droppedNoteParent.subnotes.splice(i,1);
+						} else {
+							var i = droppedNoteParent.notes.indexOf(droppedNote);
+							droppedNoteParent.notes.splice(i,1);
+						}
+						//add note to the new place
+						receivingNote.subnotes.push(droppedNote);
+						if (!receivingNote.isOpen()) receivingNote.toggleOpen();
+					}
+               	});
+        	};
+        	
             $(document).ready(function(){
                 var notesList = new NotesListViewModel();
                 ko.applyBindings(notesList, document.getElementById("content"));
@@ -28,23 +62,6 @@
                 } else {
                     notesList.newNote(null);
                 };
-                $(".sub-notes").sortable({
-                    items: ".note",
-                    revert: true,
-                    connectWith: ".sub-notes",
-                    receive: function(event, ui) {
-                        var fromNote = ko.dataFor(ui.sender[0].parentElement).id();
-                        var toNote = ko.dataFor(this.parentElement).id();
-                        alert("Note moved from "+fromNote+" to "+toNote);
-                        return;
-                    },
-                    remove: function(event, ui) {
-                        var aNote = ko.dataFor(ui.item[0]).id();
-                        var fromNote = ko.dataFor(this.parentElement).id();
-                        alert("Note "+aNote+" removed from "+fromNote);
-                        return;
-                    }
-                });
             });
             var gNotes = [{
                 id : "n1",
@@ -80,6 +97,14 @@
                         subnotes: []
                     }]
                 }]
+            }, {
+                id : "n9",
+                content: "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
+                subnotes: [{
+                    id : "n10",
+                    content: "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
+                    subnotes: []
+                }]
             }];
         </script>
         <!-- NOTES TEMPLATE -->
@@ -91,7 +116,7 @@
                     <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
                     <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
                 </div>
-                <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes}"></div>
+                <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){setupDragDrop(elements,data);},1000)}}"></div>
             </div>
         </script>
         <!-- END OF NOTES TEMPLATE -->
@@ -112,7 +137,7 @@
                 <a href="#" style="float:left" data-bind="click: $root.zoomOut">Home</a>
                 <div id="breadcrumbs-nav" data-bind="template: {name: 'breadcrumbs-template', foreach: breadcrumbs}"></div>
             </div>
-            <div id="root" data-bind="template: {name: 'note-template', foreach: notes}">
+            <div id="root" data-bind="template: {name: 'note-template', foreach: notes, afterRender: function(elements, data) {setTimeout(function(){setupDragDrop(elements,data);},1000)}}">
             </div>
             <!--div><a href="javascript:void(0)" data-bind="click: $root.newNote">New</a></div-->
         </div>
