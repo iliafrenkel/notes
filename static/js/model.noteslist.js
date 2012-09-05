@@ -91,36 +91,50 @@ function NoteModel(data) {
                 }
             }
         } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) { //key down
-            var el = $(event.target);
-            var nextEl = el.nextInDocument(".content:visible");
-            if (nextEl[0]) {
-                ko.dataFor(nextEl[0]).startEdit();
-            }
-        } else if ((event.which == 38) && (event.target.selectionEnd==0)) { //key up
-            var parents = ko.contextFor(event.target).$parents;
-            var p = parents.length;
-            for (var p = 0;p<parents.length;p++) {
-                if (parents[p] instanceof NoteModel) {
-                    var i = parents[p].subnotes.indexOf(note);
-                    if (parents[p].subnotes()[i-1]) {
-                        parents[p].subnotes()[i-1].startEdit();
-                        break;
+            var nextNoteEl = $("#" + note.id()).find("div.content:visible").eq(1);
+            if (nextNoteEl[0]) {
+                var nextNote = ko.dataFor(nextNoteEl[0]);
+                if (nextNote) nextNote.startEdit();
+            } else {
+                var parent = ko.contextFor(event.target).$parent;
+                while (parent instanceof NoteModel) {
+                    var i = parent.subnotes.indexOf(note) + 1;
+                    if (parent.subnotes()[i]) {
+                        parent.subnotes()[i].startEdit();
+                        return false;
                     } else {
-                        if (parents[p].hasSubnotes()) {
-                            parents[p].subnotes()[parents[p].subnotes.length-1].startEdit();
-                        } else {
-                            parents[p].startEdit();
-                        }
-                        break;
+                        note = parent;
+                        parent = ko.contextFor($("#" + parent.id())[0]).$parent;
                     }
+                }
+                //if we are here we reached the root
+                var i = parent.notes.indexOf(note) + 1;
+                if (parent.notes()[i]) {
+                    parent.notes()[i].startEdit();
+                }
+            }
+            return true;
+        } else if ((event.which == 38) && (event.target.selectionEnd==0)) { //key up
+            var parent = ko.contextFor(event.target).$parent;
+            if (parent instanceof NoteModel) {
+                var i = parent.subnotes.indexOf(note) - 1;
+                if (i >= 0) { //we have siblings
+                    var prevNoteEl = $("#" + parent.subnotes()[i].id()).find("div.content:visible").last();
+                    var prevNote = ko.dataFor(prevNoteEl[0]);
+                    if (prevNote) prevNote.startEdit();
                 } else {
-                    var i = parents[p].notes.indexOf(note);
-                    if (parents[p].notes()[i-1]) {
-                        parents[p].notes()[i-1].startEdit();
-                        break;
-                    };
-                };
-            };
+                    parent.startEdit();
+                }
+            } else if (parent instanceof NotesListViewModel) {
+                var i = parent.notes.indexOf(note) - 1;
+                if (i >= 0) {
+                    var prevNoteEl = $("#" + parent.notes()[i].id()).find("div.content:visible").last();
+                    var prevNote = ko.dataFor(prevNoteEl[0]);
+                    if (prevNote) prevNote.startEdit();
+                } else {
+                    return true;
+                }
+            }
         } else {
             return true;
         };
