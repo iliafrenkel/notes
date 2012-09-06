@@ -66,8 +66,8 @@ a:hover {
 }
 .note {
     /*font-size: 20px;*/
-    margin: 8px 10px;
-    padding: 0 0 0 46px;
+    margin: 8px 0px;
+    padding: 0 0 1px 46px;
     position: relative;
     vertical-align: baseline;
 }
@@ -77,6 +77,9 @@ a:hover {
      padding: 0 0 0 46px;
      position: relative;
      vertical-align: baseline;*/
+}
+.editor {
+    margin: 3px 0;
 }
 .content {
     position: relative;
@@ -167,7 +170,7 @@ a.open-link {
     text-decoration: none;
     outline: none;
     position: absolute;
-    top: 0;
+    top: 2px;
     left: 2px;
     z-index: 102;
 }
@@ -187,7 +190,7 @@ a.zoom-in-link {
     text-decoration: none;
     outline: none;
     position: absolute;
-    top: 0;
+    top: 2px;
     left: 20px;
     z-index: 101;
 }
@@ -201,9 +204,35 @@ a.zoom-in-link:hover {
     color: #4D90FE;
     background-color: #ddd;
 }
-.droppable {
-	border-bottom: solid 2px #4D90FE;
+.drag-handler {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 12px;
+    height: 100%;
+    cursor: url('/res/img/drag-handler-cursor.png'), move;
+    opacity: .6;
+    z-index: 102;
 }
-.droppable > .editor {
-	background-color:#F2F2FF;
+.ui-draggable-dragging {
+    background-color: #fff;
+}
+.editor:hover .drag-handler {
+    background: url('/res/img/drag-handler.png') repeat;
+}
+.drop-target {
+    position: absolute;
+    left: 40px;
+    height: 8px;
+    width: 94%;
+    z-index: 100;
+}
+.drop-target.above {
+    top: -8px;
+}
+.drop-target.below {
+    bottom: -8px;
+}
+.droppable {
+    background-color: #999;
 }

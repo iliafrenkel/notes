@@ -38,6 +38,7 @@ function NoteModel(data) {
                        }, self);
     self.isOpen      = ko.observable(data.isOpen || false);
     self.isInEdit    = ko.observable(false);
+    self.isZoomedIn  = ko.observable(false);
     //add subnotes creating new instances of NoteModel if necessary
     $.each(data.subnotes || [], function(idx, val) {
         if (val instanceof NoteModel) {
@@ -135,6 +136,42 @@ function NoteModel(data) {
                     return true;
                 }
             }
+        } else if (event.which == 9) {//Tab
+            if (note.isZoomedIn()) return;
+            var parent = ko.contextFor(event.target).$parent;
+            if (parent instanceof NoteModel) {
+                if (event.shiftKey) {
+                    var i = parent.subnotes.indexOf(note);
+                    parent.subnotes.splice(i,1);
+                    var grandParent = ko.contextFor($("#"+parent.id())[0]).$parent;
+                    if (grandParent instanceof NoteModel) {
+                        i = grandParent.subnotes.indexOf(parent);
+                        grandParent.subnotes.splice(i+1,0,note);
+                    } else {
+                        i = grandParent.notes.indexOf(parent);
+                        grandParent.notes.splice(i+1,0,note);
+                    }
+                } else {
+                    var i = parent.subnotes.indexOf(note)-1;
+                    if (i >= 0) {
+                        //remove the note from current position
+                        parent.subnotes.splice(i+1,1);
+                        //add it as a subnote
+                        parent.subnotes()[i].subnotes.push(note);
+                        if (!parent.subnotes()[i].isOpen()) parent.subnotes()[i].toggleOpen();
+                    }
+                }
+            } else {
+                if (event.shiftKey) return;
+                var i = parent.notes.indexOf(note)-1;
+                if (i >= 0) {
+                    //remove the note from current position
+                    parent.notes.splice(i+1,1);
+                    //add it as a subnote
+                    parent.notes()[i].subnotes.push(note);
+                    if (!parent.notes()[i].isOpen()) parent.notes()[i].toggleOpen();
+                }
+            }
         } else {
             return true;
         };
@@ -193,7 +230,11 @@ function NotesListViewModel(data) {
         //hide the note
         noteEl.hide("fast");
         //"un-zoom" previously zoomed in note
-        $(".top-level > div").unwrap();
+        if ($(".top-level > div")[0]) {
+            var prevNote = ko.dataFor($(".top-level > div")[0]);
+            if (prevNote) prevNote.isZoomedIn(false);
+            $(".top-level > div").unwrap();
+        }
         //update breadcrumbs
         self.breadcrumbs.removeAll();
         $.each(noteEl.parents(".note"), function(idx, val) {
@@ -209,12 +250,15 @@ function NotesListViewModel(data) {
         noteEl.show("fast");
         //expand self if needed
         if (!note.isOpen()) note.toggleOpen();
+        note.isZoomedIn(true);
     };
     /**
      * @method
      * Zoom out of a note to the root
      */
     self.zoomOut = function() {
+        var note = ko.dataFor($(".top-level > div")[0]);
+        if (note) note.isZoomedIn(false);
         self.breadcrumbs.removeAll();
         $(".note").hide();
         $(".top-level > div").unwrap();

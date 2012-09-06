@@ -21,33 +21,40 @@
         	function setupDragDrop (elements, data) {
             	$(elements).filter(".note").draggable({
 					axis: 'y',
-					handle: '> div.content',
-					revert: true,
+					handle: '> .drag-handler',
+					revert: false,
 					scope: 'notes',
-					stack: '.note',
-					zindex: 10000,
+					opacity: 0.6,
+					//stack: ".content",
+					helper: 'clone',
 					delay: 200
                	});
-               	$(elements).filter(".note").droppable({
+               	$(elements).filter(".note").find("> .drop-target").droppable({
                		hoverClass: 'droppable',
                		greedy: true,
 					scope: 'notes',
-					tolerance: 'pointer',
+					tolerance: 'intersect',
 					drop: function(event, ui) {
 						var receivingNote = ko.dataFor(this);
 						var droppedNote   = ko.dataFor(ui.draggable[0]);
+						if ((!receivingNote) || (!droppedNote)) return;
 						var droppedNoteParent = ko.contextFor(ui.draggable[0]).$parent;
-						//remove note from original place
-						if (droppedNoteParent instanceof NoteModel) {
-							var i = droppedNoteParent.subnotes.indexOf(droppedNote);
-							droppedNoteParent.subnotes.splice(i,1);
-						} else {
-							var i = droppedNoteParent.notes.indexOf(droppedNote);
-							droppedNoteParent.notes.splice(i,1);
-						}
+						var droppedNoteParentSubnotes = (droppedNoteParent instanceof NoteModel) ? droppedNoteParent.subnotes : droppedNoteParent.notes;
+						var originalIdx = droppedNoteParentSubnotes.indexOf(droppedNote);
+						var isAbove = $(this).hasClass("above");
 						//add note to the new place
-						receivingNote.subnotes.push(droppedNote);
-						if (!receivingNote.isOpen()) receivingNote.toggleOpen();
+                        var receivingNoteParent = ko.contextFor(this).$parent;
+                        var subnotes = (receivingNoteParent instanceof NoteModel) ? receivingNoteParent.subnotes : receivingNoteParent.notes;
+                        var i = subnotes.indexOf(receivingNote); 
+						if (isAbove) { //add above receiving note
+                            subnotes.splice(i,0,droppedNote);
+                            //remove note from original place
+                            droppedNoteParentSubnotes.splice(originalIdx+1,1);
+						} else { //add below receiving note
+                            subnotes.splice(i+1,0,droppedNote);
+                            //remove note from original place
+                            droppedNoteParentSubnotes.splice(originalIdx,1);
+						}
 					}
                	});
         	};
@@ -111,11 +118,13 @@
         <script type="text/html" id="note-template">
             <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
                 <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes, click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: $root.zoomIn">•</a>
+                <div class="drop-target above"></div>
                 <div class="editor" style="position:relative">
-                    <!--div class="drag-handler" style="float:right;right:0;top:0;width:16px;background-color:#ccc">*</div-->
+                    <div class="drag-handler" title="Drag to reoder">&nbsp;</div>
                     <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
                     <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
                 </div>
+                <div class="drop-target below"></div>
                 <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){setupDragDrop(elements,data);},1000)}}"></div>
             </div>
         </script>
