@@ -48,9 +48,20 @@ function NoteModel(data) {
      * @method
      * Add a subnote.
      */
-    self.addSubnote = function(subNote) {
+    self.addSubnote = function(subNote, subNoteIndex) {
+        subNoteIndex = subNoteIndex || 0;
         subNote.parent(self);
-        self.subnotes.push(subNote);
+        self.subnotes.splice(subNoteIndex, 0, subNote);
+    };
+    /**
+     * @method
+     * Insert a subnote after specified note.
+     */
+    self.insertSubnote = function(subNote, afterNote) {
+        var i = self.subnotes.indexOf(afterNote);
+        if (i >= 0) {
+            self.addSubnote(subNote, i+1);
+        }
     };
     /**
      * @method
@@ -58,6 +69,21 @@ function NoteModel(data) {
      */
     self.deleteSubnote = function(subNote) {
         self.subnotes.destroy(subNote);
+    };
+    /**
+     * @method
+     * Returns next note (if any).
+     */
+    self.nextNote = function() {
+        if (self.parent()) {
+            var i = self.parent().subnotes.indexOf(self);
+            return self.parent().subnotes()[i+1] || null;
+        } else {
+            var notesList = ko.contextFor($("#"+self.id())[0]).$root;
+            var i = notesList.notes.indexOf(self);
+            return notesList.notes()[i+1] || null;
+        }
+        return null;
     };
     /**
      * @method
@@ -79,51 +105,44 @@ function NoteModel(data) {
      * React on user input.
      */
     self.onUserInput = function(note, event) {
-        if (event.which == 13) { //enter or shift+enter
-            if (event.shiftKey) {
-                var n = new NoteModel({});
-                self.subnotes.unshift(n);
+        //ENTER or SHIFT+ENTER.
+        //On ENTER a new note on the same level is added AFTER the note on
+        //which the key was pressed. On SHIFT+ENTER a new sub-note is added
+        //as a first sub-note of the note on which the key was pressed.
+        if (event.which == 13) {
+            var newNote = new NoteModel({});
+            if (event.shiftKey) {//new subnote
+                self.addSubnote(newNote);
                 if (!self.isOpen()) self.toggleOpen();
-                n.startEdit();
-            } else {
-                var parent = ko.contextFor(event.target).$parent;
-                if (parent instanceof NoteModel) {
-                    var n = new NoteModel({});
-                    var i = parent.subnotes.indexOf(note);
-                    parent.subnotes.splice(i+1, 0, n);
-                    n.startEdit();
-                } else {
-                    var n = new NoteModel({});
-                    var i = parent.notes.indexOf(note);
-                    parent.notes.splice(i+1, 0, n);
-                    n.startEdit();
+            } else {//new sibling note
+                if (note.parent()) {
+                    note.parent().insertSubnote(newNote, note);
+                } else {//new top level note
+                    var notesList = ko.contextFor(event.target).$root;
+                    notesList.insertNote(newNote, note);
                 }
             }
-        } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) { //key down
-            var nextNoteEl = $("#" + note.id()).find("div.content:visible").eq(1);
-            if (nextNoteEl[0]) {
-                var nextNote = ko.dataFor(nextNoteEl[0]);
-                if (nextNote) nextNote.startEdit();
+            newNote.startEdit();
+        //KEY DOWN
+        //If the cursor is at the end, move to the next visible note.
+        } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) {
+            if (note.isOpen() && note.hasSubnotes()) {
+                note.subnotes()[0].startEdit();
             } else {
-                var parent = ko.contextFor(event.target).$parent;
-                while (parent instanceof NoteModel) {
-                    var i = parent.subnotes.indexOf(note) + 1;
-                    if (parent.subnotes()[i]) {
-                        parent.subnotes()[i].startEdit();
-                        return false;
+                var next = note;
+                while (next) {
+                    if (next.nextNote()) {
+                        next.nextNote().startEdit();
+                        return;
                     } else {
-                        note = parent;
-                        parent = ko.contextFor($("#" + parent.id())[0]).$parent;
+                        next = next.parent();
                     }
-                }
-                //if we are here we reached the root
-                var i = parent.notes.indexOf(note) + 1;
-                if (parent.notes()[i]) {
-                    parent.notes()[i].startEdit();
-                }
+                };
             }
             return true;
-        } else if ((event.which == 38) && (event.target.selectionEnd==0)) { //key up
+        //KEY UP
+        //If the cursor is at the beginning, move to the previous visible note. 
+        } else if ((event.which == 38) && (event.target.selectionEnd==0)) {
             var parent = ko.contextFor(event.target).$parent;
             if (parent instanceof NoteModel) {
                 var i = parent.subnotes.indexOf(note) - 1;
@@ -144,6 +163,9 @@ function NoteModel(data) {
                     return true;
                 }
             }
+        //TAB or SHIFT+TAB
+        //On TAB increase the level of the note (if possible). On SHIFT+TAB
+        //decrease the level (if possible).
         } else if (event.which == 9) {//Tab
             if (note.isZoomedIn()) return;
             var parent = ko.contextFor(event.target).$parent;
@@ -180,6 +202,9 @@ function NoteModel(data) {
                     if (!parent.notes()[i].isOpen()) parent.notes()[i].toggleOpen();
                 }
             }
+        //BACKSPACE
+        //If the cursor is at the beginning, delete the note. It is not actually
+        //deleted, it is marked with a property named _destroy set to true.
         } else if (event.which == 8) {//Backspace
             if ((event.target.selectionStart==event.target.selectionEnd) && (event.target.selectionEnd==0)) {
                 var notesList = ko.contextFor(event.target).$root;
@@ -253,11 +278,21 @@ function NotesListViewModel(data) {
     };
     /**
      * @method
+     * Insert a note after specified note.
+     */
+    self.insertNote = function(note, afterNote) {
+        var i = self.notes.indexOf(afterNote);
+        if (i >= 0) {
+            self.notes.splice(i+1, 0, note);
+        }
+    };
+    /**
+     * @method
      * Delete a note.
      */
     self.deleteNote = function(note) {
         if (note.parent()) {
-            parent.deleteSubnote(note);
+            note.parent().deleteSubnote(note);
         } else {
             self.notes.destroy(note);
         }
@@ -311,5 +346,51 @@ function NotesListViewModel(data) {
         $(".note").hide();
         $(".top-level > div").unwrap();
         $(".note").show("fast");
-    }
+    };
+    /**
+     * @method
+     * Setup drag and drop.
+     */
+    self._setupDragDrop = function (elements, data) {
+        $(elements).filter(".note").draggable({
+            axis: 'y',
+            handle: '> .drag-handler',
+            revert: false,
+            scope: 'notes',
+            opacity: 0.6,
+            //stack: ".content",
+            helper: 'clone',
+            delay: 200
+        });
+        $(elements).filter(".note").find("> .drop-target").droppable({
+            hoverClass: 'droppable',
+            greedy: true,
+            scope: 'notes',
+            tolerance: 'intersect',
+            drop: function(event, ui) {
+                var receivingNote = ko.dataFor(this);
+                var droppedNote   = ko.dataFor(ui.draggable[0]);
+                if ((!receivingNote) || (!droppedNote)) return;
+                var droppedNoteParent = ko.contextFor(ui.draggable[0]).$parent;
+                var droppedNoteParentSubnotes = (droppedNoteParent instanceof NoteModel) ? droppedNoteParent.subnotes : droppedNoteParent.notes;
+                var originalIdx = droppedNoteParentSubnotes.indexOf(droppedNote);
+                var isAbove = $(this).hasClass("above");
+                //add note to the new place
+                var receivingNoteParent = ko.contextFor(this).$parent;
+                var subnotes = (receivingNoteParent instanceof NoteModel) ? receivingNoteParent.subnotes : receivingNoteParent.notes;
+                var i = subnotes.indexOf(receivingNote); 
+                if (isAbove) { //add above receiving note
+                    subnotes.splice(i,0,droppedNote);
+                    //remove note from original place
+                    droppedNoteParentSubnotes.splice(originalIdx+1,1);
+                } else { //add below receiving note
+                    subnotes.splice(i+1,0,droppedNote);
+                    //remove note from original place
+                    droppedNoteParentSubnotes.splice(originalIdx,1);
+                }
+            }
+        });
+    };
+    
+    return this;
 };
