@@ -30,6 +30,7 @@ function NoteModel(data) {
     self.id          = ko.observable(data.id || rndId());
     self.content     = ko.observable(data.content || "");
     self.subnotes    = ko.observableArray([]);
+    self.parent      = ko.observable(data.parent || null);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
                        }, self);
@@ -39,18 +40,25 @@ function NoteModel(data) {
     self.isOpen      = ko.observable(data.isOpen || false);
     self.isInEdit    = ko.observable(false);
     self.isZoomedIn  = ko.observable(false);
-    //add subnotes creating new instances of NoteModel if necessary
-    $.each(data.subnotes || [], function(idx, val) {
-        if (val instanceof NoteModel) {
-            self.subnotes.push(val);
-        } else {
-            self.subnotes.push(new NoteModel(val));
-        };
-    });
 
     /**
      * Note model methods.
      */
+    /**
+     * @method
+     * Add a subnote.
+     */
+    self.addSubnote = function(subNote) {
+        subNote.parent(self);
+        self.subnotes.push(subNote);
+    };
+    /**
+     * @method
+     * Delete a subnote.
+     */
+    self.deleteSubnote = function(subNote) {
+        self.subnotes.destroy(subNote);
+    };
     /**
      * @method
      * Toggles a note state between open (expanded) and closed (collapsed).
@@ -172,10 +180,29 @@ function NoteModel(data) {
                     if (!parent.notes()[i].isOpen()) parent.notes()[i].toggleOpen();
                 }
             }
+        } else if (event.which == 8) {//Backspace
+            if ((event.target.selectionStart==event.target.selectionEnd) && (event.target.selectionEnd==0)) {
+                var notesList = ko.contextFor(event.target).$root;
+                notesList.deleteNote(note);
+            } else {
+                return true;
+            }
         } else {
             return true;
         };
     };
+    /**
+     * Initialising
+     */
+    //add subnotes creating new instances of NoteModel if necessary
+    $.each(data.subnotes || [], function(idx, val) {
+        if (val instanceof NoteModel) {
+            self.addSubnote(val);
+        } else {
+            self.addSubnote(new NoteModel(val));
+        };
+    });
+    return this;
 };
 
 /**
@@ -191,6 +218,11 @@ function NotesListViewModel(data) {
      */
     self.notes = ko.observableArray([]);
     self.breadcrumbs = ko.observableArray([]);
+    
+    /**
+     * Array of deleted notes. Used for undo.
+     */
+    self.deletedNotes = [];
 
     /**
      * NotesListView model methods.
@@ -200,7 +232,11 @@ function NotesListViewModel(data) {
      * Add a new note to the list.
      */
     self.addNote = function(note) {
-        self.notes.push(new NoteModel(note));
+        if (note instanceof NoteModel) {
+            self.notes.push(note);
+        } else {
+            self.notes.push(new NoteModel(note));
+        }
     };
     /**
      * @method
@@ -209,11 +245,23 @@ function NotesListViewModel(data) {
     self.newNote = function(parent) {
         var n = new NoteModel({});
         if (parent instanceof NoteModel) {
-            parent.subnotes.push(n);
+            parent.addSubnote(n);
         } else {
-            self.notes.push(n);
+            self.addNote(n);
         };
         n.startEdit();
+    };
+    /**
+     * @method
+     * Delete a note.
+     */
+    self.deleteNote = function(note) {
+        if (note.parent()) {
+            parent.deleteSubnote(note);
+        } else {
+            self.notes.destroy(note);
+        }
+        self.deletedNotes.push(note);
     };
     /**
      * @method
