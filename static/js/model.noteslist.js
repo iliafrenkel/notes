@@ -254,6 +254,8 @@ function NotesListViewModel(data) {
      */
     self.notes = ko.observableArray([]);
     self.breadcrumbs = ko.observableArray([]);
+    self.rootNote = ko.observable(null);
+    self.rootNoteParent = null;
     
     /**
      * Array of deleted notes. Used for undo.
@@ -321,43 +323,49 @@ function NotesListViewModel(data) {
         } else {
             note = data.note;
         }
-        var noteEl = $("#" + note.id()); //note DIV
-        //hide the note
-        noteEl.hide("fast");
+        $("#root").hide("fast");
         //"un-zoom" previously zoomed in note
-        if ($(".top-level > div")[0]) {
-            var prevNote = ko.dataFor($(".top-level > div")[0]);
-            if (prevNote) prevNote.isZoomedIn(false);
-            $(".top-level > div").unwrap();
+        if (self.rootNote()) {
+            self.rootNote().parent(self.rootNoteParent);
+            self.rootNote().isZoomedIn(false);
+            self.rootNote(null);
         }
         //update breadcrumbs
         self.breadcrumbs.removeAll();
-        $.each(noteEl.parents(".note"), function(idx, val) {
-            var n = ko.dataFor(val);
-            var h = "#" + n.id();
-            var t = n.content();
-            self.breadcrumbs.unshift({hash:h,text:t,note:n});
-        });
+        var parent = note.parent();
+        while (parent) {
+            self.breadcrumbs.unshift({
+                hash: parent.hash(),
+                text: parent.content,
+                note: parent
+            });
+            parent = parent.parent();
+        }
         //add the note to breadcrumbs
         self.breadcrumbs.push({hash:null,text:note.content()});        
-        //"zoom" in to the note
-        noteEl.wrap('<div class="top-level" />');
-        noteEl.show("fast");
         //expand self if needed
         if (!note.isOpen()) note.toggleOpen();
+        //zoom in to the note
         note.isZoomedIn(true);
+        self.rootNoteParent = note.parent(); 
+        note.parent(null);
+        self.rootNote(note);
+        $("#root").hide("fast").show("fast");
     };
     /**
      * @method
      * Zoom out of a note to the root
      */
     self.zoomOut = function() {
-        var note = ko.dataFor($(".top-level > div")[0]);
-        if (note) note.isZoomedIn(false);
+        $("#root").hide("fast");
+        //"un-zoom" previously zoomed in note
+        if (self.rootNote()) {
+            self.rootNote().parent(self.rootNoteParent);
+            self.rootNote().isZoomedIn(false);
+            self.rootNote(null);
+        }
         self.breadcrumbs.removeAll();
-        $(".note").hide();
-        $(".top-level > div").unwrap();
-        $(".note").show("fast");
+        $("#root").hide("fast").show("fast");
     };
     /**
      * @method

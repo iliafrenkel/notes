@@ -105,9 +105,12 @@
                 <a href="#" style="float:left" data-bind="click: $root.zoomOut">Home</a>
                 <div id="breadcrumbs-nav" data-bind="template: {name: 'breadcrumbs-template', foreach: breadcrumbs}"></div>
             </div>
-            <div id="root" data-bind="template: {name: 'note-template', foreach: notes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}">
-            </div>
-            <!--div><a href="javascript:void(0)" data-bind="click: $root.newNote">New</a></div-->
+            <!-- ko if: rootNote -->
+            <div id="root" data-bind="template: {name: 'note-template', data: rootNote, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
+            <!-- /ko -->
+            <!-- ko ifnot: rootNote -->
+            <div id="root" data-bind="template: {name: 'note-template', foreach: notes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
+            <!-- /ko -->
         </div>
         <div id="footer">&copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.</div>
     </body>
