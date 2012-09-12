@@ -84,7 +84,7 @@
                     <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
                 </div>
                 <div class="drop-target below"></div>
-                <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){setupDragDrop(elements,data);},1000)}}"></div>
+                <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){$root._setupDragDrop(elements,data);},1000)}}"></div>
             </div>
         </script>
         <!-- END OF NOTES TEMPLATE -->

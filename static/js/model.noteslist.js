@@ -68,11 +68,11 @@ function NoteModel(data) {
      * Delete a subnote.
      */
     self.deleteSubnote = function(subNote) {
-        self.subnotes.destroy(subNote);
+        self.subnotes.remove(subNote);
     };
     /**
      * @method
-     * Returns next note (if any).
+     * Returns next note on the same level (if any).
      */
     self.nextNote = function() {
         if (self.parent()) {
@@ -82,6 +82,21 @@ function NoteModel(data) {
             var notesList = ko.contextFor($("#"+self.id())[0]).$root;
             var i = notesList.notes.indexOf(self);
             return notesList.notes()[i+1] || null;
+        }
+        return null;
+    };
+    /**
+     * @method
+     * Returns previous note on the same level (if any).
+     */
+    self.prevNote = function() {
+        if (self.parent()) {
+            var i = self.parent().subnotes.indexOf(self);
+            return self.parent().subnotes()[i-1] || null;
+        } else {
+            var notesList = ko.contextFor($("#"+self.id())[0]).$root;
+            var i = notesList.notes.indexOf(self);
+            return notesList.notes()[i-1] || null;
         }
         return null;
     };
@@ -143,26 +158,22 @@ function NoteModel(data) {
         //KEY UP
         //If the cursor is at the beginning, move to the previous visible note. 
         } else if ((event.which == 38) && (event.target.selectionEnd==0)) {
-            var parent = ko.contextFor(event.target).$parent;
-            if (parent instanceof NoteModel) {
-                var i = parent.subnotes.indexOf(note) - 1;
-                if (i >= 0) { //we have siblings
-                    var prevNoteEl = $("#" + parent.subnotes()[i].id()).find("div.content:visible").last();
-                    var prevNote = ko.dataFor(prevNoteEl[0]);
-                    if (prevNote) prevNote.startEdit();
+            function lastChild(parent) {
+                if ((parent.hasSubnotes()) && (parent.isOpen())) {
+                    return lastChild(parent.subnotes()[parent.subnotes().length-1]);
                 } else {
-                    parent.startEdit();
+                    return parent;
                 }
-            } else if (parent instanceof NotesListViewModel) {
-                var i = parent.notes.indexOf(note) - 1;
-                if (i >= 0) {
-                    var prevNoteEl = $("#" + parent.notes()[i].id()).find("div.content:visible").last();
-                    var prevNote = ko.dataFor(prevNoteEl[0]);
-                    if (prevNote) prevNote.startEdit();
-                } else {
-                    return true;
-                }
+            };
+            var lastOpenNote = null;
+            var prevNote = note.prevNote();
+            if (prevNote) {
+                lastOpenNote = lastChild(prevNote);
+            } else {
+                lastOpenNote = note.parent();
             }
+            if (lastOpenNote) lastOpenNote.startEdit();
+            return true;
         //TAB or SHIFT+TAB
         //On TAB increase the level of the note (if possible). On SHIFT+TAB
         //decrease the level (if possible).
@@ -256,11 +267,12 @@ function NotesListViewModel(data) {
      * @method
      * Add a new note to the list.
      */
-    self.addNote = function(note) {
+    self.addNote = function(note, idx) {
+        idx = idx || 0;
         if (note instanceof NoteModel) {
-            self.notes.push(note);
+            self.notes.splice(idx, 0, note);
         } else {
-            self.notes.push(new NoteModel(note));
+            self.notes.splice(idx, 0, new NoteModel(note));
         }
     };
     /**
@@ -294,7 +306,7 @@ function NotesListViewModel(data) {
         if (note.parent()) {
             note.parent().deleteSubnote(note);
         } else {
-            self.notes.destroy(note);
+            self.notes.remove(note);
         }
         self.deletedNotes.push(note);
     };
@@ -371,22 +383,22 @@ function NotesListViewModel(data) {
                 var receivingNote = ko.dataFor(this);
                 var droppedNote   = ko.dataFor(ui.draggable[0]);
                 if ((!receivingNote) || (!droppedNote)) return;
-                var droppedNoteParent = ko.contextFor(ui.draggable[0]).$parent;
-                var droppedNoteParentSubnotes = (droppedNoteParent instanceof NoteModel) ? droppedNoteParent.subnotes : droppedNoteParent.notes;
-                var originalIdx = droppedNoteParentSubnotes.indexOf(droppedNote);
                 var isAbove = $(this).hasClass("above");
-                //add note to the new place
-                var receivingNoteParent = ko.contextFor(this).$parent;
-                var subnotes = (receivingNoteParent instanceof NoteModel) ? receivingNoteParent.subnotes : receivingNoteParent.notes;
-                var i = subnotes.indexOf(receivingNote); 
+                self.deleteNote(droppedNote);
                 if (isAbove) { //add above receiving note
-                    subnotes.splice(i,0,droppedNote);
-                    //remove note from original place
-                    droppedNoteParentSubnotes.splice(originalIdx+1,1);
-                } else { //add below receiving note
-                    subnotes.splice(i+1,0,droppedNote);
-                    //remove note from original place
-                    droppedNoteParentSubnotes.splice(originalIdx,1);
+                    if (receivingNote.parent()) {
+                        receivingNote.parent().addSubnote(droppedNote, receivingNote.parent().subnotes.indexOf(receivingNote));
+                    } else {
+                        var notesList = ko.contextFor(this).$root;
+                        notesList.addNote(droppedNote, notesList.notes.indexOf(receivingNote));
+                    }
+                } else { //add after receiving note
+                    if (receivingNote.parent()) {
+                        receivingNote.parent().insertSubnote(droppedNote, receivingNote);
+                    } else {
+                        var notesList = ko.contextFor(this).$root;
+                        notesList.insertNote(droppedNote, receivingNote);
+                    }
                 }
             }
         });
