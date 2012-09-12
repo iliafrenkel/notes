@@ -12,13 +12,13 @@
         <script type="text/javascript">
             function rndId() {
                 var S4 = function() {
-                   return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+                    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
                 };
-                return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+                return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
             };
         </script>
         <script>
-            $(document).ready(function(){
+            $(document).ready(function() {
                 var notesList = new NotesListViewModel();
                 ko.applyBindings(notesList, document.getElementById("content"));
                 if (gNotes) {
@@ -31,60 +31,60 @@
             });
             var gNotes = [{
                 id : "n1",
-                content: "Well, the way they make shows is, they make one show.",
-                isOpen: true,
-                subnotes: [{
+                content : "Well, the way they make shows is, they make one show.",
+                isOpen : true,
+                subnotes : [{
                     id : "n2",
-                    content: "That show's called a pilot.",
-                    isOpen: false,
-                    subnotes: [{
+                    content : "That show's called a pilot.",
+                    isOpen : false,
+                    subnotes : [{
                         id : "n3",
-                        content: "Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
-                        subnotes: []
+                        content : "Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
+                        subnotes : []
                     }, {
                         id : "n4",
-                        content: "Then they show that show to the people who make shows...",
-                        subnotes: [{
+                        content : "Then they show that show to the people who make shows...",
+                        subnotes : [{
                             id : "n5",
-                            content: "... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
-                            subnotes: [{
+                            content : "... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
+                            subnotes : [{
                                 id : "n8",
-                                content: "This is the end my friend, the end...",
-                                subnotes: []
+                                content : "This is the end my friend, the end...",
+                                subnotes : []
                             }]
                         }]
                     }]
                 }, {
                     id : "n6",
-                    content: "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
-                    subnotes: [{
+                    content : "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
+                    subnotes : [{
                         id : "n7",
-                        content: "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
-                        subnotes: []
+                        content : "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
+                        subnotes : []
                     }]
                 }]
             }, {
                 id : "n9",
-                content: "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
-                subnotes: [{
+                content : "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
+                subnotes : [{
                     id : "n10",
-                    content: "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
-                    subnotes: []
+                    content : "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
+                    subnotes : []
                 }]
             }];
         </script>
         <!-- NOTES TEMPLATE -->
         <script type="text/html" id="note-template">
             <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
-                <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: $root.zoomIn">•</a>
-                <div class="drop-target above"></div>
-                <div class="editor" style="position:relative">
-                    <div class="drag-handler" title="Drag to reoder">&nbsp;</div>
-                    <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
-                    <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
-                </div>
-                <div class="drop-target below"></div>
-                <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){$root._setupDragDrop(elements,data);},1000)}}"></div>
+            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: $root.zoomIn">•</a>
+            <div class="drop-target above"></div>
+            <div class="editor" style="position:relative">
+            <div class="drag-handler" title="Drag to reoder">&nbsp;</div>
+            <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
+            <textarea class="content" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
+            </div>
+            <div class="drop-target below"></div>
+            <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){$root._setupDragDrop(elements,data);},1000)}}"></div>
             </div>
         </script>
         <!-- END OF NOTES TEMPLATE -->
@@ -101,8 +101,16 @@
     </head>
     <body>
         <div id="content">
-            <div id="breadcrumbs" data-bind="visible: $root.breadcrumbs().length > 0">
-                <a href="#" style="float:left" data-bind="click: $root.zoomOut">Home</a>
+            <div id="main-menu">
+                <span style="float:left;margin-left:4px;">Notes</span>
+                <div style="float:right;margin-right: 10px">
+                    <a href="javascript:void(0)" data-bind="visible: deletedNotes().length > 0, click: undoLast">Undo</a>
+                    <a href="javascript:void(0)">Save</a>
+                </div>
+            </div>
+            <div id="breadcrumbs">
+                <a href="#" style="float:left" data-bind="visible: $root.breadcrumbs().length > 0, click: $root.zoomOut">Home</a>
+                <span style="float:left" data-bind="visible: $root.breadcrumbs().length <= 0">Home</span>
                 <div id="breadcrumbs-nav" data-bind="template: {name: 'breadcrumbs-template', foreach: breadcrumbs}"></div>
             </div>
             <!-- ko if: rootNote -->
@@ -112,6 +120,8 @@
             <div id="root" data-bind="template: {name: 'note-template', foreach: notes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
             <!-- /ko -->
         </div>
-        <div id="footer">&copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.</div>
+        <div id="footer">
+            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.
+        </div>
     </body>
 </html>

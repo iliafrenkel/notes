@@ -268,7 +268,7 @@ function NotesListViewModel(data) {
     /**
      * Array of deleted notes. Used for undo.
      */
-    self.deletedNotes = [];
+    self.deletedNotes = ko.observableArray([]);
 
     /**
      * NotesListView model methods.
@@ -418,6 +418,20 @@ function NotesListViewModel(data) {
                 }
             }
         });
+    };
+    /**
+     * @method
+     * Undo last action. 
+     */
+    self.undoLast = function() {
+        if (self.deletedNotes().length > 0) {
+            restoredNote = self.deletedNotes.pop();
+            if (restoredNote.parent()) {
+                restoredNote.parent().addSubnote(restoredNote);
+            } else {
+                self.addNote(restoredNote);
+            }
+        }
     };
     
     return this;
