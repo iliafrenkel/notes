@@ -107,27 +107,6 @@ textarea.content {
 .closed > .note, .closed > .sub-notes {
     display: none !important;
 }
-.top-level {
-    position: fixed;
-    width: 800px;
-    top: 50px;
-    bottom: 40px;
-    left: 50%;
-    margin-left: -400px;
-    text-align: left;
-    border: solid 1px #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-    padding: 20px;
-    overflow: auto;
-    z-index: 103;
-}
-.top-level > .note {
-    font-size: 21px;
-}
-.top-level > div > a.zoom-in-link, .top-level > div > a.open-link {
-    display: none;
-}
 #breadcrumbs {
     position: fixed;
     width: 800px;

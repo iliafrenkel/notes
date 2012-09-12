@@ -174,6 +174,14 @@ function NoteModel(data) {
             }
             if (lastOpenNote) lastOpenNote.startEdit();
             return true;
+        //KEY LEFT
+        //If the cursor is at the beginning and note is open, close it. 
+        } else if ((event.which == 37) && (event.target.selectionEnd == 0)) {
+            if (note.isOpen()) note.toggleOpen();
+        //KEY RIGHT
+        //If the cursor is at the end and note is closed, open it. 
+        } else if ((event.which == 39) && (event.target.textLength-event.target.selectionStart == 0)) {
+            if (!note.isOpen()) note.toggleOpen();
         //TAB or SHIFT+TAB
         //On TAB increase the level of the note (if possible). On SHIFT+TAB
         //decrease the level (if possible).
@@ -375,7 +383,7 @@ function NotesListViewModel(data) {
         $(elements).filter(".note").draggable({
             axis: 'y',
             handle: '> .drag-handler',
-            revert: false,
+            revert: true,
             scope: 'notes',
             opacity: 0.6,
             //stack: ".content",
