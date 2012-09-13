@@ -59,15 +59,14 @@ function NoteModel(data) {
      */
     self.insertSubnote = function(subNote, afterNote) {
         var i = self.subnotes.indexOf(afterNote);
-        if (i >= 0) {
-            self.addSubnote(subNote, i+1);
-        }
+        self.addSubnote(subNote, i+1);
     };
     /**
      * @method
      * Delete a subnote.
      */
     self.deleteSubnote = function(subNote) {
+        subNote.prev = subNote.prevNote();
         self.subnotes.remove(subNote);
     };
     /**
@@ -304,9 +303,7 @@ function NotesListViewModel(data) {
      */
     self.insertNote = function(note, afterNote) {
         var i = self.notes.indexOf(afterNote);
-        if (i >= 0) {
-            self.notes.splice(i+1, 0, note);
-        }
+        self.notes.splice(i+1, 0, note);
     };
     /**
      * @method
@@ -316,6 +313,7 @@ function NotesListViewModel(data) {
         if (note.parent()) {
             note.parent().deleteSubnote(note);
         } else {
+            note.prev = note.prevNote();
             self.notes.remove(note);
         }
         self.deletedNotes.push(note);
@@ -331,7 +329,6 @@ function NotesListViewModel(data) {
         } else {
             note = data.note;
         }
-        $("#root").hide("fast");
         //"un-zoom" previously zoomed in note
         if (self.rootNote()) {
             self.rootNote().parent(self.rootNoteParent);
@@ -358,14 +355,14 @@ function NotesListViewModel(data) {
         self.rootNoteParent = note.parent(); 
         note.parent(null);
         self.rootNote(note);
-        $("#root").hide("fast").show("fast");
+        $("#"+note.id()+" > .editor").effect("transfer", {to: $("#breadcrumbs-nav > *").last(), className: "ui-effects-transfer"}, 400);
+        $("#root > .note").show("puff",{percent:10}, 200);
     };
     /**
      * @method
      * Zoom out of a note to the root
      */
     self.zoomOut = function() {
-        $("#root").hide("fast");
         //"un-zoom" previously zoomed in note
         if (self.rootNote()) {
             self.rootNote().parent(self.rootNoteParent);
@@ -373,7 +370,7 @@ function NotesListViewModel(data) {
             self.rootNote(null);
         }
         self.breadcrumbs.removeAll();
-        $("#root").hide("fast").show("fast");
+        $("#root > .note").show("scale",{percent:100}, 200);
     };
     /**
      * @method
@@ -425,12 +422,13 @@ function NotesListViewModel(data) {
      */
     self.undoLast = function() {
         if (self.deletedNotes().length > 0) {
-            restoredNote = self.deletedNotes.pop();
+            var restoredNote = self.deletedNotes.pop();
             if (restoredNote.parent()) {
-                restoredNote.parent().addSubnote(restoredNote);
+                restoredNote.parent().insertSubnote(restoredNote, restoredNote.prev);
             } else {
-                self.addNote(restoredNote);
+                self.insertNote(restoredNote, restoredNote.prev);
             }
+            delete restoredNote.prev;
         }
     };
     
