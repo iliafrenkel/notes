@@ -256,3 +256,18 @@ a.zoom-in-link:hover {
     border-radius: 3px;
     z-index: 200;
 }
+::-webkit-input-placeholder {
+    font-size: 75%;
+    font-style: italic;
+    font-weight: normal;
+}
+:-moz-placeholder {
+    font-size: 75%;
+    font-style: italic;
+    font-weight: normal;
+}
+:-ms-input-placeholder {
+    font-size: 75%;
+    font-style: italic;
+    font-weight: normal;
+}

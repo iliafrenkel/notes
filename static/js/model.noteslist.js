@@ -317,6 +317,11 @@ function NotesListViewModel(data) {
             self.notes.remove(note);
         }
         self.deletedNotes.push(note);
+        //check if we have any notes left
+        //if not add an empty one
+        if (self.notes().length <= 0) {
+            self.newNote(null);
+        }
     };
     /**
      * @method
