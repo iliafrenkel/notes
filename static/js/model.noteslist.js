@@ -175,7 +175,7 @@ function NoteModel(data) {
             return true;
         //KEY LEFT
         //If the cursor is at the beginning and note is open, close it. 
-        } else if ((event.which == 37) && (event.target.selectionEnd == 0)) {
+        } else if ((event.which == 37) && (event.target.selectionEnd == 0) && (!note.isZoomedIn())) {
             if (note.isOpen()) note.toggleOpen();
         //KEY RIGHT
         //If the cursor is at the end and note is closed, open it. 

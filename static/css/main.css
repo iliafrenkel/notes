@@ -252,6 +252,7 @@ a.zoom-in-link:hover {
     background-color: #999;
 }
 .ui-effects-transfer {
-    border: dotted 1px #777;
+    border: dotted 2px #777;
+    border-radius: 3px;
     z-index: 200;
 }
