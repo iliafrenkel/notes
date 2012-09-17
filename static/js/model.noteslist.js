@@ -310,19 +310,22 @@ function NotesListViewModel(data) {
      * @method
      * Delete a note.
      */
-    self.deleteNote = function(note) {
+    self.deleteNote = function(note, canUndo) {
+        canUndo = (typeof canUndo === "undefined") ? true : canUndo;
         if (note.parent()) {
             note.parent().deleteSubnote(note);
         } else {
             note.prev = note.prevNote();
             self.notes.remove(note);
-        }
-        self.deletedNotes.push(note);
+        };
+        if (canUndo) {
+            self.deletedNotes.push(note);
+        };
         //check if we have any notes left
         //if not add an empty one
         if (self.notes().length <= 0) {
             self.newNote(null);
-        }
+        };
     };
     /**
      * @method
@@ -403,22 +406,22 @@ function NotesListViewModel(data) {
                 var droppedNote   = ko.dataFor(ui.draggable[0]);
                 if ((!receivingNote) || (!droppedNote)) return;
                 var isAbove = $(this).hasClass("above");
-                self.deleteNote(droppedNote);
+                self.deleteNote(droppedNote, false); //delete the note, but don't add it to the undo queue
                 if (isAbove) { //add above receiving note
                     if (receivingNote.parent()) {
                         receivingNote.parent().addSubnote(droppedNote, receivingNote.parent().subnotes.indexOf(receivingNote));
                     } else {
                         var notesList = ko.contextFor(this).$root;
                         notesList.addNote(droppedNote, notesList.notes.indexOf(receivingNote));
-                    }
+                    };
                 } else { //add after receiving note
                     if (receivingNote.parent()) {
                         receivingNote.parent().insertSubnote(droppedNote, receivingNote);
                     } else {
                         var notesList = ko.contextFor(this).$root;
                         notesList.insertNote(droppedNote, receivingNote);
-                    }
-                }
+                    };
+                };
             }
         });
     };
