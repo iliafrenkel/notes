@@ -189,6 +189,7 @@ function NoteModel(data) {
             var parent = ko.contextFor(event.target).$parent;
             if (parent instanceof NoteModel) {
                 if (event.shiftKey) {
+                    if (parent.isZoomedIn()) return false;
                     var i = parent.subnotes.indexOf(note);
                     parent.subnotes.splice(i,1);
                     var grandParent = ko.contextFor($("#"+parent.id())[0]).$parent;
