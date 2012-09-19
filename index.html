@@ -19,15 +19,9 @@
         </script>
         <script>
             $(document).ready(function() {
-                var notesList = new NotesListViewModel();
-                ko.applyBindings(notesList, document.getElementById("content"));
-                if (gNotes) {
-                    $.each(gNotes, function(idx, val) {
-                        notesList.addNote(val);
-                    });
-                } else {
-                    notesList.newNote(null);
-                };
+                var rootNote = new NoteModel({content:"Home"});
+                ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
+                rootNote.loadSubnotes(gNotes);
             });
             var gNotes = [{
                 id : "n1",
@@ -94,12 +88,10 @@
         <!-- END OF NOTES TEMPLATE -->
         <!-- BREADCRUMBS TEMPLATE -->
         <script type="text/html" id="breadcrumbs-template">
-            <!-- ko if: hash -->
-            <a href="#" class="nav" data-bind="attr: {href:hash, title:text}, text: text, click: $root.zoomIn"></a>
+            <!--ko if: parent -->
+            <span data-bind="template: {name: 'breadcrumbs-template', data: parent}"></span>
             <!-- /ko -->
-            <!-- ko ifnot: hash -->
-            <span class="nav" data-bind="attr: {title:text}, text: text"></span>
-            <!-- /ko -->
+            <a href="#" class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: $root.zoomIn"></a>
         </script>
         <!-- END OF BREADCRUMBS TEMPLATE -->
     </head>
@@ -108,21 +100,16 @@
             <div id="main-menu">
                 <span style="float:left;">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
-                    <a href="javascript:void(0)" data-bind="visible: deletedNotes().length > 0, click: undoLast">Undo</a>
+                    <!--a href="javascript:void(0)" data-bind="visible: deletedNotes().length > 0, click: undoLast">Undo</a-->
                     <a href="javascript:void(0)">Save</a>
                 </div>
             </div>
-            <div id="breadcrumbs">
-                <a href="#" style="float:left" data-bind="visible: $root.breadcrumbs().length > 0, click: $root.zoomOut">Home</a>
-                <span style="float:left" data-bind="visible: $root.breadcrumbs().length <= 0">Home</span>
-                <div id="breadcrumbs-nav" data-bind="template: {name: 'breadcrumbs-template', foreach: breadcrumbs}"></div>
+            <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: rootNote}">
             </div>
-            <!-- ko if: rootNote -->
-            <div id="root" data-bind="template: {name: 'note-template', data: rootNote, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
-            <!-- /ko -->
-            <!-- ko ifnot: rootNote -->
-            <div id="root" data-bind="template: {name: 'note-template', foreach: notes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
-            <!-- /ko -->
+            <div id="root">
+                <h2 data-bind="text:rootNote().content"></h2>
+                <div data-bind="template: {name: 'note-template', foreach: rootNote().subnotes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
+            </div>
         </div>
         <div id="footer">
             &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.

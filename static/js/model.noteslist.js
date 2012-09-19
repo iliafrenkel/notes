@@ -24,6 +24,7 @@
  */
 function NoteModel(data) {
     var self = this;
+    data = data || {};
     /**
      * Note model properties.
      */
@@ -46,28 +47,42 @@ function NoteModel(data) {
      */
     /**
      * @method
-     * Add a subnote.
+     * Adds a sub-note.
      */
-    self.addSubnote = function(subNote, subNoteIndex) {
-        subNoteIndex = subNoteIndex || 0;
-        subNote.parent(self);
-        self.subnotes.splice(subNoteIndex, 0, subNote);
+    self.addSubnote = function(note, opts) {
+        opts = opts || {};
+        if (!(note instanceof NoteModel)) {
+            note = new NoteModel(note);
+            note.parent(self);
+        };
+        if (opts.index) {
+            self.subnotes.splice(opts.index, 0, note);
+        } else if ((opts.after) && (opts.after instanceof NoteModel)) {
+            var idx = self.subnotes.indexOf(opts.after) + 1;
+            self.subnotes.splice(idx, 0, note);
+        } else if ((opts.before) && (opts.after instanceof NoteModel)) {
+            var idx = self.subnotes.indexOf(opts.before);
+            self.subnotes.splice(idx, 0, note);
+        } else {
+            self.subnotes.push(note);
+        };
+        return note;
     };
     /**
      * @method
-     * Insert a subnote after specified note.
+     * Loads multiple notes. 
      */
-    self.insertSubnote = function(subNote, afterNote) {
-        var i = self.subnotes.indexOf(afterNote);
-        self.addSubnote(subNote, i+1);
+    self.loadSubnotes = function (notes) {
+        $.each(notes, function(idx, val) {
+            self.addSubnote(val);
+        });
     };
     /**
      * @method
-     * Delete a subnote.
+     * Deletes a sub-note.
      */
-    self.deleteSubnote = function(subNote) {
-        subNote.prev = subNote.prevNote();
-        self.subnotes.remove(subNote);
+    self.deleteSubnote = function(note) {
+        self.subnotes.remove(note);
     };
     /**
      * @method
@@ -77,10 +92,6 @@ function NoteModel(data) {
         if (self.parent()) {
             var i = self.parent().subnotes.indexOf(self);
             return self.parent().subnotes()[i+1] || null;
-        } else {
-            var notesList = ko.contextFor($("#"+self.id())[0]).$root;
-            var i = notesList.notes.indexOf(self);
-            return notesList.notes()[i+1] || null;
         }
         return null;
     };
@@ -92,10 +103,6 @@ function NoteModel(data) {
         if (self.parent()) {
             var i = self.parent().subnotes.indexOf(self);
             return self.parent().subnotes()[i-1] || null;
-        } else {
-            var notesList = ko.contextFor($("#"+self.id())[0]).$root;
-            var i = notesList.notes.indexOf(self);
-            return notesList.notes()[i-1] || null;
         }
         return null;
     };
@@ -235,16 +242,13 @@ function NoteModel(data) {
             return true;
         };
     };
+    self._setupDragDrop = function() {return true};
     /**
      * Initialising
      */
     //add subnotes creating new instances of NoteModel if necessary
     $.each(data.subnotes || [], function(idx, val) {
-        if (val instanceof NoteModel) {
-            self.addSubnote(val);
-        } else {
-            self.addSubnote(new NoteModel(val));
-        };
+        self.addSubnote(val);
     });
     return this;
 };
@@ -255,81 +259,15 @@ function NoteModel(data) {
  * @param {object} data An object containing the required information to
  * construct an instance of NotesListViewModel.
  */
-function NotesListViewModel(data) {
+function NotesListViewModel(root) {
     var self = this;
     /**
      * NotesListView model properties.
      */
-    self.notes = ko.observableArray([]);
-    self.breadcrumbs = ko.observableArray([]);
-    self.rootNote = ko.observable(null);
-    self.rootNoteParent = null;
-    
-    /**
-     * Array of deleted notes. Used for undo.
-     */
-    self.deletedNotes = ko.observableArray([]);
+    self.rootNote = ko.observable(root || null);
 
     /**
-     * NotesListView model methods.
-     */
-    /**
-     * @method
-     * Add a new note to the list.
-     */
-    self.addNote = function(note, idx) {
-        idx = idx || 0;
-        if (note instanceof NoteModel) {
-            self.notes.splice(idx, 0, note);
-        } else {
-            self.notes.splice(idx, 0, new NoteModel(note));
-        }
-    };
-    /**
-     * @method
-     * Create an empty note and add it to the list.
-     */
-    self.newNote = function(parent) {
-        var n = new NoteModel({});
-        if (parent instanceof NoteModel) {
-            parent.addSubnote(n);
-        } else {
-            self.addNote(n);
-        };
-        n.startEdit();
-    };
-    /**
-     * @method
-     * Insert a note after specified note.
-     */
-    self.insertNote = function(note, afterNote) {
-        var i = self.notes.indexOf(afterNote);
-        self.notes.splice(i+1, 0, note);
-    };
-    /**
-     * @method
-     * Delete a note.
-     */
-    self.deleteNote = function(note, canUndo) {
-        canUndo = (typeof canUndo === "undefined") ? true : canUndo;
-        if (note.parent()) {
-            note.parent().deleteSubnote(note);
-        } else {
-            note.prev = note.prevNote();
-            self.notes.remove(note);
-        };
-        if (canUndo) {
-            self.deletedNotes.push(note);
-        };
-        //check if we have any notes left
-        //if not add an empty one
-        if (self.notes().length <= 0) {
-            self.newNote(null);
-        };
-    };
-    /**
-     * @method
-     * Zoom in to a note.
+     * @method 
      */
     self.zoomIn = function(data, event) {
         var note;
@@ -337,108 +275,10 @@ function NotesListViewModel(data) {
             note = data;
         } else {
             note = data.note;
-        }
-        //"un-zoom" previously zoomed in note
-        if (self.rootNote()) {
-            self.rootNote().parent(self.rootNoteParent);
-            self.rootNote().isZoomedIn(false);
-            self.rootNote(null);
-        }
-        //update breadcrumbs
-        self.breadcrumbs.removeAll();
-        var parent = note.parent();
-        while (parent) {
-            self.breadcrumbs.unshift({
-                hash: parent.hash(),
-                text: parent.content,
-                note: parent
-            });
-            parent = parent.parent();
-        }
-        //add the note to breadcrumbs
-        self.breadcrumbs.push({hash:null,text:note.content()});        
-        //expand self if needed
-        if (!note.isOpen()) note.toggleOpen();
-        //zoom in to the note
-        note.isZoomedIn(true);
-        self.rootNoteParent = note.parent(); 
-        note.parent(null);
+        };
+        self.rootNote().isZoomedIn(false);
         self.rootNote(note);
-        $("#"+note.id()+" > .editor").effect("transfer", {to: $("#breadcrumbs-nav > *").last(), className: "ui-effects-transfer"}, 400);
-        $("#root > .note").show("puff",{percent:10}, 200);
-    };
-    /**
-     * @method
-     * Zoom out of a note to the root
-     */
-    self.zoomOut = function() {
-        //"un-zoom" previously zoomed in note
-        if (self.rootNote()) {
-            self.rootNote().parent(self.rootNoteParent);
-            self.rootNote().isZoomedIn(false);
-            self.rootNote(null);
-        }
-        self.breadcrumbs.removeAll();
-        $("#root > .note").show("scale",{percent:100}, 200);
-    };
-    /**
-     * @method
-     * Setup drag and drop.
-     */
-    self._setupDragDrop = function (elements, data) {
-        $(elements).filter(".note").draggable({
-            axis: 'y',
-            handle: '> .drag-handler',
-            revert: true,
-            scope: 'notes',
-            opacity: 0.6,
-            //stack: ".content",
-            helper: 'clone',
-            delay: 200
-        });
-        $(elements).filter(".note").find("> .drop-target").droppable({
-            hoverClass: 'droppable',
-            greedy: true,
-            scope: 'notes',
-            tolerance: 'intersect',
-            drop: function(event, ui) {
-                var receivingNote = ko.dataFor(this);
-                var droppedNote   = ko.dataFor(ui.draggable[0]);
-                if ((!receivingNote) || (!droppedNote)) return;
-                var isAbove = $(this).hasClass("above");
-                self.deleteNote(droppedNote, false); //delete the note, but don't add it to the undo queue
-                if (isAbove) { //add above receiving note
-                    if (receivingNote.parent()) {
-                        receivingNote.parent().addSubnote(droppedNote, receivingNote.parent().subnotes.indexOf(receivingNote));
-                    } else {
-                        var notesList = ko.contextFor(this).$root;
-                        notesList.addNote(droppedNote, notesList.notes.indexOf(receivingNote));
-                    };
-                } else { //add after receiving note
-                    if (receivingNote.parent()) {
-                        receivingNote.parent().insertSubnote(droppedNote, receivingNote);
-                    } else {
-                        var notesList = ko.contextFor(this).$root;
-                        notesList.insertNote(droppedNote, receivingNote);
-                    };
-                };
-            }
-        });
-    };
-    /**
-     * @method
-     * Undo last action. 
-     */
-    self.undoLast = function() {
-        if (self.deletedNotes().length > 0) {
-            var restoredNote = self.deletedNotes.pop();
-            if (restoredNote.parent()) {
-                restoredNote.parent().insertSubnote(restoredNote, restoredNote.prev);
-            } else {
-                self.insertNote(restoredNote, restoredNote.prev);
-            }
-            delete restoredNote.prev;
-        }
+        note.isZoomedIn(true);
     };
     
     return this;

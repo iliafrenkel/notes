@@ -159,7 +159,7 @@ textarea.content {
     box-shadow: 2px 2px 10px 2px #ddd;
     background-color: #fff;
 }
-#breadcrumbs .nav {
+#breadcrumbs a {
     max-width: 100px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -167,6 +167,8 @@ textarea.content {
     display: block;
     line-height: 13px;
     float: left;
+}
+#breadcrumbs .nav {
     padding-left: 20px;
     background: url('../img/arrow-right.png') left no-repeat transparent;
 }
