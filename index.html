@@ -91,7 +91,12 @@
             <!--ko if: parent -->
             <span data-bind="template: {name: 'breadcrumbs-template', data: parent}"></span>
             <!-- /ko -->
+            <!-- ko if: $data == $root.rootNote() -->
+            <div class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: $root.zoomIn"></div>
+            <!-- /ko -->
+            <!-- ko ifnot: $data == $root.rootNote() -->
             <a href="#" class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: $root.zoomIn"></a>
+            <!-- /ko -->
         </script>
         <!-- END OF BREADCRUMBS TEMPLATE -->
     </head>

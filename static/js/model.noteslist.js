@@ -305,8 +305,13 @@ function NotesListViewModel(root) {
             note.isZoomedIn(true);
             $("#subnotes").show("puff",{percent:10}, 200);
             $("#add-note").show("puff",{percent:10}, 200);
+            $("#breadcrumbs > *").last().css({opacity:0});
             $("#root > h2").show("puff",{percent:10}, 200, function(){
-                $("#root > h2").effect("transfer", {to: $("#breadcrumbs > *").last(), className: "ui-effects-transfer"}, 300);
+                $("#root > h2").effect("transfer", {to: $("#breadcrumbs > *").last(), className: "ui-effects-transfer"}, 300, function() {
+                    $("#breadcrumbs > *").last().show("puff",{percent:10}, 200, function(){
+                        $("#breadcrumbs > *").last().css({opacity:1});
+                    });
+                });
             });
         });
     };

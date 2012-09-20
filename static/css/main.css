@@ -80,7 +80,7 @@ a:hover {
     border-radius: 5px;
     box-shadow: 2px 2px 10px 2px #ddd;
     background-color: #fff;
-    padding: 20px;
+    padding: 10px 20px;
     overflow: auto;
     z-index: 100;
 }
@@ -162,12 +162,14 @@ textarea.content {
     overflow: auto;
     z-index: 100;
     font-size: 11px;
+    font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+    letter-spacing: -1px;
     border: solid 1px #ccc;
     border-radius: 5px;
     box-shadow: 2px 2px 10px 2px #ddd;
     background-color: #fff;
 }
-#breadcrumbs a {
+#breadcrumbs a, #breadcrumbs div {
     max-width: 100px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -175,6 +177,9 @@ textarea.content {
     display: block;
     line-height: 13px;
     float: left;
+}
+#breadcrumbs div {
+    color: #222;
 }
 #breadcrumbs .nav {
     padding-left: 20px;
