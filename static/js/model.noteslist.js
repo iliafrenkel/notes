@@ -250,7 +250,8 @@ function NotesListViewModel(root) {
     self.rootNote = ko.observable(root || null);
 
     /**
-     * @method 
+     * @method
+     * Makes a specified note a root note. 
      */
     self.zoomIn = function(note, event) {
         if (self.rootNote() == note) return;
