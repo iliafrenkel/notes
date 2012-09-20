@@ -53,14 +53,14 @@ function NoteModel(data) {
         opts = opts || {};
         if (!(note instanceof NoteModel)) {
             note = new NoteModel(note);
-            note.parent(self);
         };
-        if (opts.index) {
-            self.subnotes.splice(opts.index, 0, note);
+        note.parent(self);
+        if (opts.position) {
+            self.subnotes.splice(opts.position, 0, note);
         } else if ((opts.after) && (opts.after instanceof NoteModel)) {
             var idx = self.subnotes.indexOf(opts.after) + 1;
             self.subnotes.splice(idx, 0, note);
-        } else if ((opts.before) && (opts.after instanceof NoteModel)) {
+        } else if ((opts.before) && (opts.before instanceof NoteModel)) {
             var idx = self.subnotes.indexOf(opts.before);
             self.subnotes.splice(idx, 0, note);
         } else {
@@ -83,7 +83,19 @@ function NoteModel(data) {
      */
     self.deleteSubnote = function(note) {
         self.subnotes.remove(note);
+        return note;
     };
+    /**
+     * @method
+     * Moves sub-note to another position 
+     */
+    self.moveSubnote = function(note, opts, parent) {
+        if (parent) {
+            parent.addSubnote(self.deleteSubnote(note), opts);
+        } else {
+            self.addSubnote(self.deleteSubnote(note), opts);
+        }
+    }
     /**
      * @method
      * Returns next note on the same level (if any).
@@ -131,19 +143,12 @@ function NoteModel(data) {
         //which the key was pressed. On SHIFT+ENTER a new sub-note is added
         //as a first sub-note of the note on which the key was pressed.
         if (event.which == 13) {
-            var newNote = new NoteModel({});
-            if (event.shiftKey) {//new subnote
-                self.addSubnote(newNote);
+            if (event.shiftKey) {//new sub-note
                 if (!self.isOpen()) self.toggleOpen();
+                self.addSubnote(null, {position:0}).startEdit();
             } else {//new sibling note
-                if (note.parent()) {
-                    note.parent().insertSubnote(newNote, note);
-                } else {//new top level note
-                    var notesList = ko.contextFor(event.target).$root;
-                    notesList.insertNote(newNote, note);
-                }
+                note.parent().addSubnote(null, {after:note}).startEdit();
             }
-            newNote.startEdit();
         //KEY DOWN
         //If the cursor is at the end, move to the next visible note.
         } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) {
@@ -242,7 +247,7 @@ function NoteModel(data) {
             return true;
         };
     };
-    self._setupDragDrop = function() {return true};
+
     /**
      * Initialising
      */
@@ -280,6 +285,39 @@ function NotesListViewModel(root) {
         self.rootNote(note);
         note.isZoomedIn(true);
     };
-    
+     /**
+     * @method
+     * Setup drag and drop.
+     */
+    self._setupDragDrop = function (elements, data) {
+        $(elements).filter(".note").draggable({
+            axis: 'y',
+            handle: '> .drag-handler',
+            revert: false,
+            scope: 'notes',
+            opacity: 0.6,
+            //stack: ".content",
+            helper: 'clone',
+            delay: 200
+        });
+        $(elements).filter(".note").find("> .drop-target").droppable({
+            hoverClass: 'droppable',
+            greedy: true,
+            scope: 'notes',
+            tolerance: 'intersect',
+            drop: function(event, ui) {
+                var receivingNote = ko.dataFor(this);
+                var droppedNote   = ko.dataFor(ui.draggable[0]);
+                if ((!receivingNote) || (!droppedNote)) return;
+                var isAbove = $(this).hasClass("above");
+                if (isAbove) { //add above receiving note
+                    droppedNote.parent().moveSubnote(droppedNote, {before: receivingNote}, receivingNote.parent());
+                } else { //add after receiving note
+                    droppedNote.parent().moveSubnote(droppedNote, {after: receivingNote}, receivingNote.parent());
+                };
+            }
+        });
+    };
+   
     return this;
 };
