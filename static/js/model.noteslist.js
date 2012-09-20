@@ -253,6 +253,7 @@ function NotesListViewModel(root) {
      * @method 
      */
     self.zoomIn = function(note, event) {
+        if (self.rootNote() == note) return;
         if (self.rootNote()) {
             self.rootNote().isZoomedIn(false);
         };
