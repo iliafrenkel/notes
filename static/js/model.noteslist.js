@@ -55,7 +55,7 @@ function NoteModel(data) {
             note = new NoteModel(note);
         };
         note.parent(self);
-        if (opts.position >= 0) {
+        if (opts.position) {
             self.subnotes.splice(opts.position, 0, note);
         } else if ((opts.after) && (opts.after instanceof NoteModel)) {
             var idx = self.subnotes.indexOf(opts.after) + 1;
@@ -82,7 +82,6 @@ function NoteModel(data) {
      * Deletes a sub-note.
      */
     self.deleteSubnote = function(note) {
-        note.parent(null);
         self.subnotes.remove(note);
         return note;
     };
@@ -92,9 +91,9 @@ function NoteModel(data) {
      */
     self.moveSubnote = function(note, opts, parent) {
         if (parent) {
-            return parent.addSubnote(self.deleteSubnote(note), opts);
+            parent.addSubnote(self.deleteSubnote(note), opts);
         } else {
-            return self.addSubnote(self.deleteSubnote(note), opts);
+            self.addSubnote(self.deleteSubnote(note), opts);
         }
     }
     /**
@@ -199,17 +198,39 @@ function NoteModel(data) {
         //decrease the level (if possible).
         } else if (event.which == 9) {//Tab
             if (note.isZoomedIn()) return;
-            var parent = note.parent();
-            var grandParent = parent.parent();
-            if (event.shiftKey) {
-                if (parent.isZoomedIn()) return false;
-                parent.moveSubnote(note, {after: parent}, grandParent);
-                $(note.hash()+" > .editor > textarea").effect("highlight", {}, 1000);
+            var parent = ko.contextFor(event.target).$parent;
+            if (parent instanceof NoteModel) {
+                if (event.shiftKey) {
+                    if (parent.isZoomedIn()) return false;
+                    var i = parent.subnotes.indexOf(note);
+                    parent.subnotes.splice(i,1);
+                    var grandParent = ko.contextFor($("#"+parent.id())[0]).$parent;
+                    if (grandParent instanceof NoteModel) {
+                        i = grandParent.subnotes.indexOf(parent);
+                        grandParent.subnotes.splice(i+1,0,note);
+                    } else {
+                        i = grandParent.notes.indexOf(parent);
+                        grandParent.notes.splice(i+1,0,note);
+                    }
+                } else {
+                    var i = parent.subnotes.indexOf(note)-1;
+                    if (i >= 0) {
+                        //remove the note from current position
+                        parent.subnotes.splice(i+1,1);
+                        //add it as a subnote
+                        parent.subnotes()[i].subnotes.push(note);
+                        if (!parent.subnotes()[i].isOpen()) parent.subnotes()[i].toggleOpen();
+                    }
+                }
             } else {
-                if (note.prevNote()) {
-                    if (!note.prevNote().isOpen()) note.prevNote().toggleOpen();
-                    parent.moveSubnote(note, {}, note.prevNote());
-                    $(note.hash()+" > .editor > textarea").effect("highlight", {}, 1000);
+                if (event.shiftKey) return;
+                var i = parent.notes.indexOf(note)-1;
+                if (i >= 0) {
+                    //remove the note from current position
+                    parent.notes.splice(i+1,1);
+                    //add it as a subnote
+                    parent.notes()[i].subnotes.push(note);
+                    if (!parent.notes()[i].isOpen()) parent.notes()[i].toggleOpen();
                 }
             }
         //BACKSPACE
@@ -217,7 +238,8 @@ function NoteModel(data) {
         //deleted, it is marked with a property named _destroy set to true.
         } else if (event.which == 8) {//Backspace
             if ((event.target.selectionStart==event.target.selectionEnd) && (event.target.selectionEnd==0)) {
-                note.parent().deleteSubnote(note);
+                var notesList = ko.contextFor(event.target).$root;
+                notesList.deleteNote(note);
             } else {
                 return true;
             }
@@ -252,10 +274,14 @@ function NotesListViewModel(root) {
     /**
      * @method 
      */
-    self.zoomIn = function(note, event) {
-        if (self.rootNote()) {
-            self.rootNote().isZoomedIn(false);
+    self.zoomIn = function(data, event) {
+        var note;
+        if (data instanceof NoteModel) {
+            note = data;
+        } else {
+            note = data.note;
         };
+        self.rootNote().isZoomedIn(false);
         self.rootNote(note);
         note.isZoomedIn(true);
     };
@@ -293,6 +319,5 @@ function NotesListViewModel(root) {
         });
     };
    
-   if (self.rootNote()) self.zoomIn(self.rootNote());
     return this;
 };
