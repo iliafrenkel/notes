@@ -255,11 +255,20 @@ function NotesListViewModel(root) {
      */
     self.zoomIn = function(note, event) {
         if (self.rootNote() == note) return;
-        if (self.rootNote()) {
-            self.rootNote().isZoomedIn(false);
-        };
-        self.rootNote(note);
-        note.isZoomedIn(true);
+        $("#subnotes").hide("puff",{percent:10}, 200);
+        $("#add-note").hide("puff",{percent:10}, 200);
+        $("#root > h2").hide("puff",{percent:10}, 200, function(){
+            if (self.rootNote()) {
+                self.rootNote().isZoomedIn(false);
+            };
+            self.rootNote(note);
+            note.isZoomedIn(true);
+            $("#subnotes").show("puff",{percent:10}, 200);
+            $("#add-note").show("puff",{percent:10}, 200);
+            $("#root > h2").show("puff",{percent:10}, 200, function(){
+                $("#root > h2").effect("transfer", {to: $("#breadcrumbs > *").last(), className: "ui-effects-transfer"}, 300);
+            });
+        });
     };
      /**
      * @method

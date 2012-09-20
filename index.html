@@ -107,8 +107,9 @@
             <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: rootNote}">
             </div>
             <div id="root">
-                <h2 data-bind="visible: rootNote().parent(), text:rootNote().content"></h2>
-                <div data-bind="template: {name: 'note-template', foreach: rootNote().subnotes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
+                <h2 data-bind="text:rootNote().content"></h2>
+                <div id="subnotes" data-bind="template: {name: 'note-template', foreach: rootNote().subnotes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
+                <a id="add-note" href="javascript:void(0)" title="Add new note" data-bind="click: function(){rootNote().addSubnote().startEdit();}">+</a>
             </div>
         </div>
         <div id="footer">

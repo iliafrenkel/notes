@@ -281,3 +281,13 @@ a.zoom-in-link:hover {
     font-style: italic;
     font-weight: normal;
 }
+#add-note, #add-note:visited {
+    margin-left: 20px;
+    font-weight: bold;
+    font-size: 1.5em;
+    color: #bbb;
+    text-decoration: none;
+}
+#add-note:hover {
+    color: #222;
+}
