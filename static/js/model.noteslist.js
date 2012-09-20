@@ -43,11 +43,25 @@ function NoteModel(data) {
     self.isZoomedIn  = ko.observable(false);
 
     /**
-     * Note model methods.
+     * Note model methods that manipulate sub-notes and position.
      */
     /**
      * @method
-     * Adds a sub-note.
+     * Adds a sub-note to self creating new instance of NoteModel if needed.
+     * @param {object} note Either an instance of NoteModel or an object that
+     *                      will be passed to NodeModel constructor.
+     * @param {object} opts Hash object with options that will define where in
+     *                      the hierarchy a new note will be inserted. Possible
+     *                      values for the hash are:
+     *                      opts.position - if specified provides a numerical
+     *                      index at which new note will be inserted;
+     *                      opts.after - an instance of NoteModel after which
+     *                      new note will be inserted;
+     *                      opts.before - an instance of NoteModel before which
+     *                      new note will be inserted.
+     *                      If no options are specified a note will be inserted
+     *                      at the end.
+     * @return {object} An instance of NoteModel.
      */
     self.addSubnote = function(note, opts) {
         opts = opts || {};
@@ -70,7 +84,10 @@ function NoteModel(data) {
     };
     /**
      * @method
-     * Loads multiple notes. 
+     * Loads multiple sub-notes.
+     * @param {array} notes Array of notes to load. Each note can be either an
+     *                      instance of NoteModel or a hash object that will be
+     *                      passed to NoteModel constructor.  
      */
     self.loadSubnotes = function (notes) {
         $.each(notes, function(idx, val) {
@@ -80,6 +97,8 @@ function NoteModel(data) {
     /**
      * @method
      * Deletes a sub-note.
+     * @param {object} note An instance of NoteModel to delete.
+     * @return {object} An instance of the deleted note.
      */
     self.deleteSubnote = function(note) {
         note.parent(null);
@@ -88,7 +107,13 @@ function NoteModel(data) {
     };
     /**
      * @method
-     * Moves sub-note to another position 
+     * Moves sub-note to another position (possibly within another parent).
+     * @param {object} note   An instance of NoteModel to be moved.
+     * @param {object} opts   Options hash object that specifies new position
+     *                        for the note. See addSubnote method for details.
+     * @param {object} parent An instance of NoteModel that will be a new
+     *                        parent for the note or null if note is moved
+     *                        within the same parent.
      */
     self.moveSubnote = function(note, opts, parent) {
         if (parent) {
@@ -99,7 +124,9 @@ function NoteModel(data) {
     }
     /**
      * @method
-     * Returns next note on the same level (if any).
+     * Returns next note on the same level as self (if any).
+     * @return {object} An instance of NoteModel or null if the note is the
+     *                  last one. 
      */
     self.nextNote = function() {
         if (self.parent()) {
@@ -110,7 +137,9 @@ function NoteModel(data) {
     };
     /**
      * @method
-     * Returns previous note on the same level (if any).
+     * Returns previous note on the same level as self (if any).
+     * @return {object} An instance of NoteModel or null if the note is the
+     *                  first one.
      */
     self.prevNote = function() {
         if (self.parent()) {
@@ -119,30 +148,49 @@ function NoteModel(data) {
         }
         return null;
     };
+
+    /**
+     * Note model methods related to UI.
+     */
     /**
      * @method
      * Toggles a note state between open (expanded) and closed (collapsed).
      */
     self.toggleOpen = function() {
-        var self = this;
         self.isOpen(!self.isOpen());
     };
     /**
      * @method
-     * Set the note into edit mode. 
+     * Set the note into edit mode allowing user to make some changes. 
      */
     self.startEdit = function() {
         self.isInEdit(true);  
     };
     /**
      * @method
-     * React on user input.
+     * Reacts on user input.
+     * @param {object} note  An instance of NoteModel that received an event.
+     * @param {object} event Browser event object (keydown).
+     * 
+     * Following events are intercepted:
+     *   ENTER       - adds new note after the note on which event has occurred;
+     *   SHIFT+ENTER - adds new sub-note to a note on which event has occurred;
+     *   KEY DOWN    - moves to the next visible note if the cursor is at end;
+     *   KEY UP      - moves to the previous visible note if the cursor is at
+     *                 the beginning;
+     *   KEY LEFT    - closes (collapses) the note if it is open and the cursor
+     *                 is at the beginning;
+     *   KEY RIGHT   - opens (expands) the note if it is closed and the cursor
+     *                 is at the end;
+     *   TAB         - increases the level of the note (if possible), makes it
+     *                 a sub-note of the previous (sibling) note;
+     *   SHIFT+TAB   - decrease the level of the note (if possible), makes it
+     *                 sibling of its parent;
+     *   BACKSPACE   - deletes the note (and all its sub-notes) if the cursor
+     *                 is at the beginning. 
      */
     self.onUserInput = function(note, event) {
         //ENTER or SHIFT+ENTER.
-        //On ENTER a new note on the same level is added AFTER the note on
-        //which the key was pressed. On SHIFT+ENTER a new sub-note is added
-        //as a first sub-note of the note on which the key was pressed.
         if (event.which == 13) {
             if (event.shiftKey) {//new sub-note
                 if (!self.isOpen()) self.toggleOpen();
@@ -151,7 +199,6 @@ function NoteModel(data) {
                 note.parent().addSubnote(null, {after:note}).startEdit();
             }
         //KEY DOWN
-        //If the cursor is at the end, move to the next visible note.
         } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) {
             if (note.isOpen() && note.hasSubnotes()) {
                 note.subnotes()[0].startEdit();
@@ -168,7 +215,6 @@ function NoteModel(data) {
             }
             return true;
         //KEY UP
-        //If the cursor is at the beginning, move to the previous visible note. 
         } else if ((event.which == 38) && (event.target.selectionEnd==0)) {
             function lastChild(parent) {
                 if ((parent.hasSubnotes()) && (parent.isOpen())) {
@@ -187,17 +233,13 @@ function NoteModel(data) {
             if (lastOpenNote) lastOpenNote.startEdit();
             return true;
         //KEY LEFT
-        //If the cursor is at the beginning and note is open, close it. 
         } else if ((event.which == 37) && (event.target.selectionEnd == 0) && (!note.isZoomedIn())) {
             if (note.isOpen()) note.toggleOpen();
         //KEY RIGHT
-        //If the cursor is at the end and note is closed, open it. 
         } else if ((event.which == 39) && (event.target.textLength-event.target.selectionStart == 0)) {
             if (!note.isOpen()) note.toggleOpen();
         //TAB or SHIFT+TAB
-        //On TAB increase the level of the note (if possible). On SHIFT+TAB
-        //decrease the level (if possible).
-        } else if (event.which == 9) {//Tab
+        } else if (event.which == 9) {
             if (note.isZoomedIn()) return;
             var parent = note.parent();
             var grandParent = parent.parent();
@@ -213,9 +255,7 @@ function NoteModel(data) {
                 }
             }
         //BACKSPACE
-        //If the cursor is at the beginning, delete the note. It is not actually
-        //deleted, it is marked with a property named _destroy set to true.
-        } else if (event.which == 8) {//Backspace
+        } else if (event.which == 8) {
             if ((event.target.selectionStart==event.target.selectionEnd) && (event.target.selectionEnd==0)) {
                 note.parent().deleteSubnote(note);
             } else {
@@ -227,9 +267,9 @@ function NoteModel(data) {
     };
 
     /**
-     * Initialising
+     * Initialising.
      */
-    //add subnotes creating new instances of NoteModel if necessary
+    //add sub-notes creating new instances of NoteModel if necessary
     $.each(data.subnotes || [], function(idx, val) {
         self.addSubnote(val);
     });
@@ -239,8 +279,8 @@ function NoteModel(data) {
 /**
  * @class NotesListViewModel Data model that represents notes list.
  * @constructor
- * @param {object} data An object containing the required information to
- * construct an instance of NotesListViewModel.
+ * @param {object} root An instance of NoteModel that will become the root
+ *                      note of the notes tree.
  */
 function NotesListViewModel(root) {
     var self = this;
@@ -304,6 +344,6 @@ function NotesListViewModel(root) {
         });
     };
    
-   if (self.rootNote()) self.zoomIn(self.rootNote());
+    if (self.rootNote()) self.zoomIn(self.rootNote());
     return this;
 };

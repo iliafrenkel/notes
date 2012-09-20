@@ -75,7 +75,7 @@
                 <div class="drop-target above"></div>
             <!-- /ko -->
             <div class="editor" style="position:relative">
-            <div class="drag-handler" title="Drag to reoder">&nbsp;</div>
+            <div class="drag-handler" title="Drag to reorder">&nbsp;</div>
             <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
             <textarea class="content" placeholder="Just start typing" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
             </div>
