@@ -21,7 +21,8 @@
             $(document).ready(function() {
                 var rootNote = new NoteModel({content:"Home"});
                 ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
-                rootNote.loadSubnotes(gNotes);
+                $.getJSON("/note", function(data){rootNote.loadSubnotes(data)});
+                //rootNote.loadSubnotes(gNotes);
             });
             var gNotes = [{
                 id : "n1",
@@ -118,7 +119,7 @@
             </div>
         </div>
         <div id="footer">
-            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.
+            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.&nbsp;|&nbsp;<a href="/_ah/admin/">Admin</a>
         </div>
     </body>
 </html>

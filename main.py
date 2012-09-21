@@ -15,8 +15,10 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import webapp2
-from google.appengine.ext.webapp import template
+#from google.appengine.ext.webapp import template
 from google.appengine.runtime import DeadlineExceededError
+
+from controllers.note import NoteController
 
 import jinja2
 import os
@@ -37,7 +39,8 @@ class MainPage(webapp2.RequestHandler):
             self.response.set_status(500)
             self.response.out.write("This operation could not be completed in time...")
 
-application = webapp2.WSGIApplication([('/', MainPage)], debug=True)
+application = webapp2.WSGIApplication([('/', MainPage),
+                                       ('/note', NoteController)], debug=True)
 
 
 def main():
