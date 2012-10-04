@@ -38,14 +38,15 @@ class NoteController(webapp2.RequestHandler):
             #n2.put()
             #n3 = Note(content="... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",parentNote=n2)
             #n3.put()
+            #n4 = Note(content="The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.", parentNote=root, position=1)
+            #n4.put()
             ##################
-            notes = Note.all().filter('parentNote ==', None).fetch(None)
+            notes = Note.all().filter('parentNote ==', None).order('position').fetch(None)
             res = []
             for n in notes:
                 res.append(n.to_dict())
             self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps(res))
-            
+            self.response.out.write(json.dumps(res))            
         except DeadlineExceededError:
             self.response.clear()
             self.response.set_status(500)

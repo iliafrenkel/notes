@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <title>Notes</title>
-        <link rel="shortcut icon" href="/res/images/logo.ico" />
+        <link rel="shortcut icon" href="/res/img/logo.ico" />
         <link rel="stylesheet" href="/res/css/main.css" />
         <script type="text/javascript" src="/res/js/jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="/res/js/jquery-ui-1.8.17.custom.min.js"></script>
@@ -21,7 +21,7 @@
             $(document).ready(function() {
                 var rootNote = new NoteModel({content:"Home"});
                 ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
-                $.getJSON("/note", function(data){rootNote.loadSubnotes(data)});
+                $.getJSON("/note", function(data){rootNote.loadSubnotes(data)}).error(function(res) {alert(res.responseText)});
                 //rootNote.loadSubnotes(gNotes);
             });
             var gNotes = [{
@@ -104,9 +104,9 @@
     <body>
         <div id="content">
             <div id="main-menu">
-                <span style="float:left;">Notes</span>
+                <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
-                    <!--a href="javascript:void(0)" data-bind="visible: deletedNotes().length > 0, click: undoLast">Undo</a-->
+                    <a href="javascript:void(0)" class="disabled">Undo</a>
                     <a href="javascript:void(0)">Save</a>
                 </div>
             </div>

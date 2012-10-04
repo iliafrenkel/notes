@@ -28,7 +28,7 @@ class Note(db.Model):
     """
     content     = db.StringProperty(required=True)
     parentNote  = db.SelfReferenceProperty(collection_name='subnotes')
-    nextNote    = db.SelfReferenceProperty()
+    position    = db.IntegerProperty(required=True,default=0)
     
     def to_dict(self):
         """
@@ -41,5 +41,6 @@ class Note(db.Model):
         return {
                "id"          : unicode(self.key()),
                "content"     : unicode(self.content),
+               "position"    : self.position,
                "subnotes"    : subnotes
                }
