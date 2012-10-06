@@ -29,7 +29,7 @@ class Note(db.Model):
     content     = db.StringProperty(required=True)
     parentNote  = db.SelfReferenceProperty(collection_name='subnotes')
     position    = db.IntegerProperty(required=True,default=0)
-    
+
     def to_dict(self):
         """
         Converts Note model to dictionary
@@ -38,9 +38,19 @@ class Note(db.Model):
         res = self.subnotes.fetch(None)
         for s in res:
             subnotes.append(s.to_dict())
+        if self.nextNote:
+            nextNoteId = unicode(self.nextNote.key())
+        else:
+            nextNoteId = ""
+        if self.prevNote:
+            prevNoteId = unicode(self.prevNote.key())
+        else:
+            prevNoteId = ""
         return {
                "id"          : unicode(self.key()),
                "content"     : unicode(self.content),
+
                "position"    : self.position,
+
                "subnotes"    : subnotes
                }

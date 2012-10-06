@@ -7,6 +7,7 @@
         <link rel="stylesheet" href="/res/css/main.css" />
         <script type="text/javascript" src="/res/js/jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="/res/js/jquery-ui-1.8.17.custom.min.js"></script>
+        <script type="text/javascript" src="/res/js/jquery.loadmask.min.js"></script>
         <script type="text/javascript" src="/res/js/knockout-2.1.0.js"></script>
         <script type="text/javascript" src="/res/js/model.noteslist.js"></script>
         <script type="text/javascript">
@@ -21,7 +22,11 @@
             $(document).ready(function() {
                 var rootNote = new NoteModel({content:"Home"});
                 ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
-                $.getJSON("/note", function(data){rootNote.loadSubnotes(data)}).error(function(res) {alert(res.responseText)});
+
+                $("#root").mask("Loading notes...");
+
+                $.getJSON("/note", function(data){rootNote.loadSubnotes(data); $("#root").unmask();}).error(function(res) {alert(res.responseText)});
+
                 //rootNote.loadSubnotes(gNotes);
             });
             var gNotes = [{

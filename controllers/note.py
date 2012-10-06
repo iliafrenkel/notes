@@ -18,6 +18,7 @@ import webapp2
 from google.appengine.runtime import DeadlineExceededError
 from models.note import Note
 import json
+import time
 
 class NoteController(webapp2.RequestHandler):
     """
@@ -46,7 +47,8 @@ class NoteController(webapp2.RequestHandler):
             for n in notes:
                 res.append(n.to_dict())
             self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps(res))            
+
+            self.response.out.write(json.dumps(res))
         except DeadlineExceededError:
             self.response.clear()
             self.response.set_status(500)

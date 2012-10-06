@@ -148,6 +148,16 @@ function NoteModel(data) {
         }
         return null;
     };
+    /**
+     * @method
+     * Returns sub-note by ID.
+     * @return  {object} An instance of NoteModel or null if not found.
+     */
+    self.findById = function(noteId) {
+        $.each(self.subnotes(), function(idx, val) {
+            if (val.id == noteId) return val;
+        });
+    }
 
     /**
      * Note model methods related to UI.
