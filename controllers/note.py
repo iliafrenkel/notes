@@ -57,6 +57,7 @@ class NoteController(webapp2.RequestHandler):
 
     def post(self):
         """
+
             Creates new note.
         """
         try:
@@ -114,7 +115,3 @@ class NoteController(webapp2.RequestHandler):
                 self.response.clear()
                 self.response.set_status(404)
                 self.response.out.write("Note not found. "+noteId)
-        except DeadlineExceededError:
-            self.response.clear()
-            self.response.set_status(500)
-            self.response.out.write("This operation could not be completed in time...")

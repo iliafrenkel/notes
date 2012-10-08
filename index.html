@@ -22,9 +22,10 @@
             $(document).ready(function() {
                 var rootNote = new NoteModel({content:"Home"});
                 ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
-                $("#root").mask("Loading notes...");
-                $.getJSON("/note", function(data){rootNote.loadSubnotes(data); $("#root").unmask();}).error(function(res) {alert(res.responseText)});
 
+
+                $("#root").mask("Loading notes...", 300);
+                $.getJSON("/note", function(data){rootNote.loadSubnotes(data); $("#root").unmask();}).error(function(res) {alert(res.responseText)});
                 $('body').on('keydown', function(event){
                     if (event.which==107) {
                         var notesList = ko.dataFor($("#content")[0]);
