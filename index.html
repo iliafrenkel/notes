@@ -22,11 +22,17 @@
             $(document).ready(function() {
                 var rootNote = new NoteModel({content:"Home"});
                 ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
-
                 $("#root").mask("Loading notes...");
-
                 $.getJSON("/note", function(data){rootNote.loadSubnotes(data); $("#root").unmask();}).error(function(res) {alert(res.responseText)});
 
+                $('body').on('keydown', function(event){
+                    if (event.which==107) {
+                        var notesList = ko.dataFor($("#content")[0]);
+                        notesList.rootNote().addSubnote().startEdit();
+                        return false;
+                    }
+                    return true;
+                });
                 //rootNote.loadSubnotes(gNotes);
             });
             var gNotes = [{

@@ -16,9 +16,11 @@
 
 import webapp2
 from google.appengine.runtime import DeadlineExceededError
+from google.appengine.api import datastore_errors
 from models.note import Note
 import json
 import time
+import urlparse
 
 class NoteController(webapp2.RequestHandler):
     """
@@ -47,8 +49,71 @@ class NoteController(webapp2.RequestHandler):
             for n in notes:
                 res.append(n.to_dict())
             self.response.headers['Content-Type'] = 'application/json'
-
             self.response.out.write(json.dumps(res))
+        except DeadlineExceededError:
+            self.response.clear()
+            self.response.set_status(500)
+            self.response.out.write("This operation could not be completed in time...")
+
+    def post(self):
+        """
+            Creates new note.
+        """
+        try:
+            parentId = self.request.get("parentId")
+            content = self.request.get("content")
+            try:
+                parent = Note.get(parentId)
+            except datastore_errors.BadKeyError:
+                parent = None
+            note = Note(content=content, parentNote=parent)
+            note.put()
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(json.dumps(note.to_dict()))
+        except DeadlineExceededError:
+            self.response.clear()
+            self.response.set_status(500)
+            self.response.out.write("This operation could not be completed in time...")
+
+    def put(self):
+        """
+            Update existing note.
+        """
+        try:
+            noteId = self.request.get("id")
+            content = self.request.get("content")
+            try:
+                note = Note.get(noteId)
+                note.content = content
+                note.put()
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(json.dumps(note.to_dict()))
+            except datastore_errors.BadKeyError:
+                self.response.clear()
+                self.response.set_status(404)
+                self.response.out.write("Note not found.")
+        except DeadlineExceededError:
+            self.response.clear()
+            self.response.set_status(500)
+            self.response.out.write("This operation could not be completed in time...")
+
+    def delete(self):
+        """
+            Delete existing note.
+        """
+        try:
+            #noteId = self.request.get("id")
+            data = urlparse.parse_qs(self.request.body)
+            noteId  = data["id"][0]
+            try:
+                note = Note.get(noteId)
+                note.delete()
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(json.dumps(note.to_dict()))
+            except datastore_errors.BadKeyError:
+                self.response.clear()
+                self.response.set_status(404)
+                self.response.out.write("Note not found. "+noteId)
         except DeadlineExceededError:
             self.response.clear()
             self.response.set_status(500)

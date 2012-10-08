@@ -32,6 +32,7 @@ function NoteModel(data) {
     self.content     = ko.observable(data.content || "");
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
+    self.lastUpdated = ko.observable(data.timestamp || null);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
                        }, self);
@@ -41,6 +42,7 @@ function NoteModel(data) {
     self.isOpen      = ko.observable(data.isOpen || false);
     self.isInEdit    = ko.observable(false);
     self.isZoomedIn  = ko.observable(false);
+    self.isUpdateScheduled = ko.observable(false);
 
     /**
      * Note model methods that manipulate sub-notes and position.
@@ -80,6 +82,10 @@ function NoteModel(data) {
         } else {
             self.subnotes.push(note);
         };
+        //post new note to the server
+        if (!note.lastUpdated()) {
+            note.remoteCreate();
+        };
         return note;
     };
     /**
@@ -103,6 +109,7 @@ function NoteModel(data) {
     self.deleteSubnote = function(note) {
         note.parent(null);
         self.subnotes.remove(note);
+        note.remoteDelete();
         return note;
     };
     /**
@@ -208,7 +215,7 @@ function NoteModel(data) {
             } else {//new sibling note
                 note.parent().addSubnote(null, {after:note}).startEdit();
             }
-        //KEY DOWN
+        //ARROW KEY DOWN
         } else if ((event.which == 40) && (event.target.textLength-event.target.selectionStart==0)) {
             if (note.isOpen() && note.hasSubnotes()) {
                 note.subnotes()[0].startEdit();
@@ -224,7 +231,7 @@ function NoteModel(data) {
                 };
             }
             return true;
-        //KEY UP
+        //ARROW KEY UP
         } else if ((event.which == 38) && (event.target.selectionEnd==0)) {
             function lastChild(parent) {
                 if ((parent.hasSubnotes()) && (parent.isOpen())) {
@@ -242,10 +249,10 @@ function NoteModel(data) {
             }
             if (lastOpenNote) lastOpenNote.startEdit();
             return true;
-        //KEY LEFT
+        //ARROW KEY LEFT
         } else if ((event.which == 37) && (event.target.selectionEnd == 0) && (!note.isZoomedIn())) {
             if (note.isOpen()) note.toggleOpen();
-        //KEY RIGHT
+        //ARROW KEY RIGHT
         } else if ((event.which == 39) && (event.target.textLength-event.target.selectionStart == 0)) {
             if (!note.isOpen()) note.toggleOpen();
         //TAB or SHIFT+TAB
@@ -277,11 +284,75 @@ function NoteModel(data) {
     };
 
     /**
+     * Note model methods responsible for communication with the server.  
+     */
+    /**
+     * @method
+     * Send a request to the server to create a new note. 
+     */
+    self.remoteCreate = function() {
+        $.post("/note",
+            {
+                "parentId": self.parent().id(),
+                "content": self.content()
+            },
+            function(data) {
+                self.id(data.id);
+                self.lastUpdated(data.timestamp);
+            }
+        );
+    };
+    /**
+     * @method
+     * Update a note on the server.
+     */
+    self.remoteUpdate = function() {
+        $.ajax({
+            url: "/note",
+            type: "PUT",
+            data: {
+                id: self.id(),
+                content: self.content()                
+            },
+            success: function(data) {
+                self.lastUpdated(data.timestamp);
+            },
+            complete: function() {
+                self.isUpdateScheduled(false);
+            }
+        });
+    };
+    /**
+     * @method
+     * Delete a note on the server.
+     */
+    self.remoteDelete = function() {
+        $.ajax({
+            url: "/note",
+            type: "DELETE",
+            data: {
+                id: self.id()
+            },
+            success: function(data) {
+            },
+            complete: function() {
+            }
+        });
+    };
+    
+    /**
      * Initialising.
      */
     //add sub-notes creating new instances of NoteModel if necessary
     $.each(data.subnotes || [], function(idx, val) {
         self.addSubnote(val);
+    });
+    //subscribe to changes of content to save it to the server periodically
+    self.content.subscribe(function(newValue){
+        if (!self.isUpdateScheduled()) {
+            setTimeout(self.remoteUpdate, 10000);
+            self.isUpdateScheduled(true);
+        }
     });
     return this;
 };

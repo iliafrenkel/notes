@@ -20,15 +20,17 @@
 """
 
 from google.appengine.ext import db
+import time
 
 class Note(db.Model):
     """
         Note model class.
         Properties:
     """
-    content     = db.StringProperty(required=True)
+    content     = db.StringProperty()
     parentNote  = db.SelfReferenceProperty(collection_name='subnotes')
     position    = db.IntegerProperty(required=True,default=0)
+    timestamp   = db.DateTimeProperty(auto_now=True)
 
     def to_dict(self):
         """
@@ -38,19 +40,10 @@ class Note(db.Model):
         res = self.subnotes.fetch(None)
         for s in res:
             subnotes.append(s.to_dict())
-        if self.nextNote:
-            nextNoteId = unicode(self.nextNote.key())
-        else:
-            nextNoteId = ""
-        if self.prevNote:
-            prevNoteId = unicode(self.prevNote.key())
-        else:
-            prevNoteId = ""
         return {
                "id"          : unicode(self.key()),
                "content"     : unicode(self.content),
-
                "position"    : self.position,
-
+               "timestamp"   : time.mktime(self.timestamp.timetuple())*1000,
                "subnotes"    : subnotes
                }
