@@ -114,4 +114,8 @@ class NoteController(webapp2.RequestHandler):
             except datastore_errors.BadKeyError:
                 self.response.clear()
                 self.response.set_status(404)
-                self.response.out.write("Note not found. "+noteId)
+                self.response.out.write("Note not found.")
+        except DeadlineExceededError:
+            self.response.clear()
+            self.response.set_status(500)
+            self.response.out.write("This operation could not be completed in time...")

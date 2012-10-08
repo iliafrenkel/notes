@@ -45,6 +45,5 @@ class Note(db.Model):
                "content"     : unicode(self.content),
                "position"    : self.position,
                "timestamp"   : time.mktime(self.timestamp.timetuple())*1000,
-
                "subnotes"    : subnotes
                }
