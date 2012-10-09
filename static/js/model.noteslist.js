@@ -123,10 +123,15 @@ function NoteModel(data) {
      *                        within the same parent.
      */
     self.moveSubnote = function(note, opts, parent) {
+        self.subnotes.remove(note);
         if (parent) {
-            return parent.addSubnote(self.deleteSubnote(note), opts);
+            note = parent.addSubnote(note, opts);
+            //!!!TEMPORARY
+            note.remoteUpdate();
+            //!!!
+            return note;
         } else {
-            return self.addSubnote(self.deleteSubnote(note), opts);
+            return self.addSubnote(note, opts);
         }
     }
     /**
@@ -250,10 +255,10 @@ function NoteModel(data) {
             if (lastOpenNote) lastOpenNote.startEdit();
             return true;
         //ARROW KEY LEFT
-        } else if ((event.which == 37) && (event.target.selectionEnd == 0) && (!note.isZoomedIn())) {
+        } else if ( (event.which == 37) && (!note.isZoomedIn())&& ((event.target.selectionEnd == 0) || event.ctrlKey) ) {
             if (note.isOpen()) note.toggleOpen();
         //ARROW KEY RIGHT
-        } else if ((event.which == 39) && (event.target.textLength-event.target.selectionStart == 0)) {
+        } else if ((event.which == 39) && ((event.target.textLength-event.target.selectionStart == 0) || event.ctrlKey) ) {
             if (!note.isOpen()) note.toggleOpen();
         //TAB or SHIFT+TAB
         } else if (event.which == 9) {
@@ -293,8 +298,8 @@ function NoteModel(data) {
     self.remoteCreate = function() {
         $.post("/note",
             {
-                "parentId": self.parent().id(),
-                "content": self.content()
+                "parentId" : self.parent().id(),
+                "content"  : self.content()
             },
             function(data) {
                 self.id(data.id);
@@ -311,8 +316,9 @@ function NoteModel(data) {
             url: "/note",
             type: "PUT",
             data: {
-                id: self.id(),
-                content: self.content()                
+                "id"       : self.id(),
+                "parentId" : self.parent().id(),
+                "content"  : self.content()                
             },
             success: function(data) {
                 self.lastUpdated(data.timestamp);

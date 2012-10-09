@@ -82,10 +82,16 @@ class NoteController(webapp2.RequestHandler):
         """
         try:
             noteId = self.request.get("id")
+            parentId = self.request.get("parentId")
             content = self.request.get("content")
+            try:
+                parent = Note.get(parentId)
+            except datastore_errors.BadKeyError:
+                parent = None
             try:
                 note = Note.get(noteId)
                 note.content = content
+                note.parentNote = parent
                 note.put()
                 self.response.headers['Content-Type'] = 'application/json'
                 self.response.out.write(json.dumps(note.to_dict()))

@@ -37,7 +37,7 @@ class Note(db.Model):
         Converts Note model to dictionary
         """
         subnotes = []
-        res = self.subnotes.fetch(None)
+        res = self.subnotes.order('position').fetch(None)
         for s in res:
             subnotes.append(s.to_dict())
         return {

@@ -25,7 +25,17 @@
 
 
                 $("#root").mask("Loading notes...", 300);
-                $.getJSON("/note", function(data){rootNote.loadSubnotes(data); $("#root").unmask();}).error(function(res) {alert(res.responseText)});
+                $.getJSON("/note", function(data){
+                    rootNote.loadSubnotes(data);
+                    $("#root").unmask();
+                    if (rootNote.hasSubnotes()) {
+                        rootNote.subnotes()[0].startEdit();
+                    }
+                })
+                .error(function(res) {
+                    alert(res.responseText)
+                });
+                
                 $('body').on('keydown', function(event){
                     if (event.which==107) {
                         var notesList = ko.dataFor($("#content")[0]);
