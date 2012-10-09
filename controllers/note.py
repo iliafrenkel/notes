@@ -108,15 +108,22 @@ class NoteController(webapp2.RequestHandler):
         """
             Delete existing note.
         """
+        def deleteNote(note):
+            notesDeleted = 0
+            subnotes = note.subnotes.fetch(None)
+            for sn in subnotes:
+                notesDeleted = notesDeleted + deleteNote(sn)
+            note.delete()
+            return notesDeleted + 1
+            
         try:
-            #noteId = self.request.get("id")
             data = urlparse.parse_qs(self.request.body)
             noteId  = data["id"][0]
             try:
                 note = Note.get(noteId)
-                note.delete()
+                notesDeleted = deleteNote(note)
                 self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write(json.dumps(note.to_dict()))
+                self.response.out.write('{"result":"OK","count":'+str(notesDeleted)+'}')
             except datastore_errors.BadKeyError:
                 self.response.clear()
                 self.response.set_status(404)
