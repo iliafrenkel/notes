@@ -62,12 +62,26 @@ class NoteController(webapp2.RequestHandler):
         """
         try:
             parentId = self.request.get("parentId")
-            content = self.request.get("content")
+            content  = self.request.get("content")
             try:
                 parent = Note.get(parentId)
             except datastore_errors.BadKeyError:
                 parent = None
-            note = Note(content=content, parentNote=parent)
+            try:
+                position = int(self.request.get("position"))
+                if parent:
+                    notes = parent.subnotes.filter('position >=', position).order('position').fetch(None)
+                else:
+                    notes = Note.all().filter('parentNote ==', None).filter('position >=', position).order('position').fetch(None)
+                for n in notes:
+                    n.position = n.position + 1
+                    n.put()
+            except ValueError:
+                if parent:
+                    position = parent.subnotes.count()
+                else:
+                    position = 0  
+            note = Note(content=content, position=position, parentNote=parent)
             note.put()
             self.response.headers['Content-Type'] = 'application/json'
             self.response.out.write(json.dumps(note.to_dict()))
@@ -89,9 +103,26 @@ class NoteController(webapp2.RequestHandler):
             except datastore_errors.BadKeyError:
                 parent = None
             try:
+                position = int(self.request.get("position"))
+                if parent:
+                    notes = parent.subnotes.filter('position >=', position).order('position').fetch(None)
+                else:
+                    notes = Note.all().filter('parentNote ==', None).filter('position >=', position).order('position').fetch(None)
+                cnt = position
+                for n in notes:
+                    cnt = cnt + 1
+                    n.position = cnt
+                    n.put()
+            except ValueError:
+                if parent:
+                    position = parent.subnotes.count()
+                else:
+                    position = 0  
+            try:
                 note = Note.get(noteId)
                 note.content = content
                 note.parentNote = parent
+                note.position = position
                 note.put()
                 self.response.headers['Content-Type'] = 'application/json'
                 self.response.out.write(json.dumps(note.to_dict()))
@@ -122,6 +153,13 @@ class NoteController(webapp2.RequestHandler):
             try:
                 note = Note.get(noteId)
                 notesDeleted = deleteNote(note)
+                if note.parentNote:
+                    notes = note.parentNote.subnotes.filter('position >=', note.position).order('position').fetch(None)
+                else:
+                    notes = Note.all().filter('parentNote ==', None).filter('position >=', note.position).order('position').fetch(None)
+                for n in notes:
+                    n.position = n.position - 1
+                    n.put()
                 self.response.headers['Content-Type'] = 'application/json'
                 self.response.out.write('{"result":"OK","count":'+str(notesDeleted)+'}')
             except datastore_errors.BadKeyError:

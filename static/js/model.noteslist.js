@@ -299,6 +299,7 @@ function NoteModel(data) {
         $.post("/note",
             {
                 "parentId" : self.parent().id(),
+                "position" : self.parent().subnotes.indexOf(self),
                 "content"  : self.content()
             },
             function(data) {
@@ -318,6 +319,7 @@ function NoteModel(data) {
             data: {
                 "id"       : self.id(),
                 "parentId" : self.parent().id(),
+                "position" : self.parent().subnotes.indexOf(self),
                 "content"  : self.content()                
             },
             success: function(data) {
