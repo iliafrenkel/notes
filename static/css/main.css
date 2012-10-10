@@ -40,7 +40,7 @@ a:hover {
     top: 0px;
     left: 0px;
     box-shadow: 0px 2px 10px 1px #aaa;
-    background-color: #eee;
+    background-color: #ddd;
     color: #444;
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -247,6 +247,9 @@ a.zoom-in-link {
     top: 2px;
     left: 20px;
     z-index: 101;
+}
+a.zoom-in-link.saving {
+    background-color: #fdd;
 }
 a.open-link:hover {
     text-decoration: none;
