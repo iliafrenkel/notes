@@ -19,81 +19,60 @@
             };
         </script>
         <script>
-            $(document).ready(function() {
-                var rootNote = new NoteModel({content:"Home"});
-                ko.applyBindings(new NotesListViewModel(rootNote), document.getElementById("content"));
+            function NotesApp() {
+                var self = this;
 
-
-                $("#root").mask("Loading notes...", 300);
-                $.getJSON("/note", function(data){
-                    rootNote.loadSubnotes(data);
-                    $("#root").unmask();
-                    if (rootNote.hasSubnotes()) {
-                        rootNote.subnotes()[0].startEdit();
-                    }
-                })
-                .error(function(res) {
-                    alert(res.responseText)
-                });
+                self.rootNote     = null;
+                self.listView     = null;
+                self.deletedNotes = ko.observableArray([]);
                 
-                $('body').on('keydown', function(event){
-                    if (event.which==107) {
-                        var notesList = ko.dataFor($("#content")[0]);
-                        notesList.rootNote().addSubnote().startEdit();
-                        return false;
+                self.init = function() {
+                    // Create the root note and initialise bindings
+                    self.rootNote = new NoteModel({content:"Home"});
+                    self.listView = new NotesListViewModel(self.rootNote)
+                    ko.applyBindings(self, document.getElementById("content"));
+                    
+                    // Load notes from the server
+                    $("#root").mask("Loading notes...", 300);
+                    $.getJSON("/note", function(data){
+                        self.rootNote.loadSubnotes(data);
+                        $("#root").unmask();
+                        if (self.rootNote.hasSubnotes()) {
+                            self.rootNote.subnotes()[0].startEdit();
+                        }
+                    })
+                    .error(function(res) {
+                        alert("Error occured while loading notes from the server.")
+                    });
+                    
+                    // Setup global keyboard shortcuts
+                    $('body').on('keydown', function(event){
+                        if (event.which==107) {
+                            self.rootNote.addSubnote().startEdit();
+                            return false;
+                        }
+                        return true;
+                    });
+                };
+                
+                self.undo = function() {
+                    if (self.deletedNotes().length > 0) {
+                        var note = self.deletedNotes.pop();
+                        //restore the note
+                        note.parent().addSubnote(note, {position: note.position()});
                     }
-                    return true;
-                });
-                //rootNote.loadSubnotes(gNotes);
+                };
+            };
+            
+            var app = new NotesApp();
+            $(document).ready(function() {
+                app.init();
             });
-            var gNotes = [{
-                id : "n1",
-                content : "Well, the way they make shows is, they make one show.",
-                isOpen : true,
-                subnotes : [{
-                    id : "n2",
-                    content : "That show's called a pilot.",
-                    isOpen : false,
-                    subnotes : [{
-                        id : "n3",
-                        content : "Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
-                        subnotes : []
-                    }, {
-                        id : "n4",
-                        content : "Then they show that show to the people who make shows...",
-                        subnotes : [{
-                            id : "n5",
-                            content : "... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
-                            subnotes : [{
-                                id : "n8",
-                                content : "This is the end my friend, the end...",
-                                subnotes : []
-                            }]
-                        }]
-                    }]
-                }, {
-                    id : "n6",
-                    content : "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
-                    subnotes : [{
-                        id : "n7",
-                        content : "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
-                        subnotes : []
-                    }]
-                }]
-            }, {
-                id : "n9",
-                content : "The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.",
-                subnotes : [{
-                    id : "n10",
-                    content : "Blessed is he who, in the name of charity and good will, shepherds the weak through the valley of darkness, for he is truly his brother's keeper and the finder of lost children.",
-                    subnotes : []
-                }]
-            }];
         </script>
         <!-- NOTES TEMPLATE -->
         <script type="text/html" id="note-template">
             <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
-            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: $root.zoomIn, css: {saving: isUpdateScheduled}">•</a>
+            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: app.listView.zoomIn, css: {saving: isUpdateScheduled}">•</a>
             <!-- ko ifnot: isZoomedIn -->
                 <div class="drop-target above"></div>
             <!-- /ko -->
@@ -105,7 +84,7 @@
             <!-- ko ifnot: isZoomedIn -->
             <div class="drop-target below"></div>
             <!-- /ko -->
-            <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){$root._setupDragDrop(elements,data);},1000)}}"></div>
+            <div class="sub-notes" data-bind="template: {name: 'note-template', foreach: subnotes, afterRender: function(elements, data) {setTimeout(function(){app.listView._setupDragDrop(elements,data);},1000)}}"></div>
             </div>
         </script>
         <!-- END OF NOTES TEMPLATE -->
@@ -114,11 +93,11 @@
             <!--ko if: parent -->
             <span data-bind="template: {name: 'breadcrumbs-template', data: parent}"></span>
             <!-- /ko -->
-            <!-- ko if: $data == $root.rootNote() -->
-            <div class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: $root.zoomIn"></div>
+            <!-- ko if: $data == app.listView.rootNote() -->
+            <div class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: app.listView.zoomIn"></div>
             <!-- /ko -->
-            <!-- ko ifnot: $data == $root.rootNote() -->
-            <a href="#" class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: $root.zoomIn"></a>
+            <!-- ko ifnot: $data == app.listView.rootNote() -->
+            <a href="#" class="nav" data-bind="attr: {href:hash, title:content}, css: {nav: parent}, text: content, click: app.listView.zoomIn"></a>
             <!-- /ko -->
         </script>
         <!-- END OF BREADCRUMBS TEMPLATE -->
@@ -128,16 +107,16 @@
             <div id="main-menu">
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
-                    <a href="javascript:void(0)" class="disabled">Undo</a>
+                    <a href="javascript:void(0)" data-bind="click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
                     <a href="javascript:void(0)">Save</a>
                 </div>
             </div>
-            <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: rootNote}">
+            <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: app.listView.rootNote}">
             </div>
             <div id="root">
-                <h2 data-bind="text:rootNote().content"></h2>
-                <div id="subnotes" data-bind="template: {name: 'note-template', foreach: rootNote().subnotes, afterRender: function(elements, data) {setTimeout(function(){_setupDragDrop(elements,data);},1000)}}"></div>
-                <a id="add-note" href="javascript:void(0)" title="Add new note" data-bind="click: function(){rootNote().addSubnote().startEdit();}">+</a>
+                <h2 data-bind="text:app.listView.rootNote().content"></h2>
+                <div id="subnotes" data-bind="template: {name: 'note-template', foreach: app.listView.rootNote().subnotes, afterRender: function(elements, data) {setTimeout(function(){app.listView._setupDragDrop(elements,data);},1000)}}"></div>
+                <a id="add-note" href="javascript:void(0)" title="Add new note" data-bind="click: function(){app.listView.rootNote().addSubnote().startEdit();}">+</a>
             </div>
         </div>
         <div id="footer">

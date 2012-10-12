@@ -120,12 +120,17 @@ class NoteController(webapp2.RequestHandler):
                     position = 0  
             try:
                 note = Note.get(noteId)
-                note.content = content
-                note.parentNote = parent
-                note.position = position
-                note.put()
-                self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write(json.dumps(note.to_dict()))
+                if note:
+                    note.content = content
+                    note.parentNote = parent
+                    note.position = position
+                    note.put()
+                    self.response.headers['Content-Type'] = 'application/json'
+                    self.response.out.write(json.dumps(note.to_dict()))
+                else:
+                    self.response.clear()
+                    self.response.set_status(404)
+                    self.response.out.write("Note not found.")
             except datastore_errors.BadKeyError:
                 self.response.clear()
                 self.response.set_status(404)
@@ -139,20 +144,12 @@ class NoteController(webapp2.RequestHandler):
         """
             Delete existing note.
         """
-        def deleteNote(note):
-            notesDeleted = 0
-            subnotes = note.subnotes.fetch(None)
-            for sn in subnotes:
-                notesDeleted = notesDeleted + deleteNote(sn)
-            note.delete()
-            return notesDeleted + 1
-            
         try:
             data = urlparse.parse_qs(self.request.body)
             noteId  = data["id"][0]
             try:
                 note = Note.get(noteId)
-                notesDeleted = deleteNote(note)
+                note.delete()
                 if note.parentNote:
                     notes = note.parentNote.subnotes.filter('position >=', note.position).order('position').fetch(None)
                 else:
@@ -161,7 +158,7 @@ class NoteController(webapp2.RequestHandler):
                     n.position = n.position - 1
                     n.put()
                 self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write('{"result":"OK","count":'+str(notesDeleted)+'}')
+                self.response.out.write('{"result":"OK"}')
             except datastore_errors.BadKeyError:
                 self.response.clear()
                 self.response.set_status(404)

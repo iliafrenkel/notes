@@ -47,3 +47,11 @@ class Note(db.Model):
                "timestamp"   : time.mktime(self.timestamp.timetuple())*1000,
                "subnotes"    : subnotes
                }
+        
+    def delete(self):
+        """
+            Overwrite the default delete method to delete all sub-notes.
+        """
+        for n in self.subnotes.fetch(None):
+            n.delete()
+        db.delete(self)

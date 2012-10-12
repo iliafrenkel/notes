@@ -10,6 +10,7 @@ handlers:
 
 - url: /.*
   script: main.application
+  login: required
 
 libraries:
 - name: jinja2

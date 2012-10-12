@@ -32,6 +32,7 @@ function NoteModel(data) {
     self.content     = ko.observable(data.content || "");
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
+    self.position    = ko.observable(data.position || 0);
     self.lastUpdated = ko.observable(data.timestamp || null);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
@@ -107,9 +108,10 @@ function NoteModel(data) {
      * @return {object} An instance of the deleted note.
      */
     self.deleteSubnote = function(note) {
-        note.parent(null);
-        self.subnotes.remove(note);
-        note.remoteDelete();
+        self.subnotes.remove(note); //remove from sub-notes
+        note.remoteDelete();        //remove from server
+        note.lastUpdated(null);     //needed to re-create after undo        
+        app.deletedNotes.push(note);//add to deletedNotes for undo        
         return note;
     };
     /**
@@ -358,11 +360,12 @@ function NoteModel(data) {
     //subscribe to changes of content to save it to the server periodically
     self.content.subscribe(function(newValue){
         if (!self.isUpdateScheduled()) {
-            setTimeout(self.remoteUpdate, 10000);
+            setTimeout(self.remoteUpdate, 3000);
             self.isUpdateScheduled(true);
         }
     });
-    return this;
+
+    return self;
 };
 
 /**
@@ -439,5 +442,5 @@ function NotesListViewModel(root) {
     };
    
     if (self.rootNote()) self.zoomIn(self.rootNote());
-    return this;
+    return self;
 };
