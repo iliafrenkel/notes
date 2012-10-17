@@ -34,7 +34,7 @@
                     
                     // Load notes from the server
                     $("#root").mask("Loading notes...", 300);
-                    $.getJSON("/note", function(data){
+                    $.getJSON("/note/list/", function(data){
                         self.rootNote.loadSubnotes(data);
                         $("#root").unmask();
                         if (self.rootNote.hasSubnotes()) {

@@ -28,9 +28,10 @@ class Note(db.Model):
         Properties:
     """
     content     = db.StringProperty()
-    parentNote  = db.SelfReferenceProperty(collection_name='subnotes')
     position    = db.IntegerProperty(required=True,default=0)
-    timestamp   = db.DateTimeProperty(auto_now=True)
+    created     = db.DateTimeProperty(auto_now_add=True)
+    updated     = db.DateTimeProperty(auto_now=True)
+    parentNote  = db.SelfReferenceProperty(collection_name='subnotes')
 
     def to_dict(self):
         """
@@ -44,7 +45,8 @@ class Note(db.Model):
                "id"          : unicode(self.key()),
                "content"     : unicode(self.content),
                "position"    : self.position,
-               "timestamp"   : time.mktime(self.timestamp.timetuple())*1000,
+               "created"     : time.mktime(self.created.timetuple())*1000,
+               "updated"     : time.mktime(self.updated.timetuple())*1000,
                "subnotes"    : subnotes
                }
         

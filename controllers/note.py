@@ -26,10 +26,60 @@ class NoteController(webapp2.RequestHandler):
     """
         This class handles all REST requests related to a Note.
     """
-    def get(self):
+
+    def list_notes(self, parent=None):
         """
-            Returns either all the notes or a specific note with sub-notes
-            (optionally).
+            Returns all notes as a JSON string. If parent is given returns
+            all notes starting from the parent.
+        """
+        if parent:
+            return json.dumps(parent.to_dict())
+        else:
+            notes = Note.all().filter('parentNote ==', None).order('position').fetch(None)
+            res = []
+            for n in notes:
+                res.append(n.to_dict())
+            return json.dumps(res)
+
+    def create_note(self, content, parent=None):
+        """
+            Creates a new note, saves it to datastore and returns newly
+            created note as JSON string.
+        """
+        note = Note(content=content, parentNote=parent)
+        note.put()
+        return json.dumps(note.to_dict())
+
+    def update_note(self, note, content):
+        """
+            Updates the content of existing note and returns it as JSON string.
+        """
+        note.content = content
+        note.put()
+        return json.dumps(note.to_dict())
+    
+    def delete_note(self, note):
+        """
+            Deletes a note and all its sub-notes.
+        """
+        subnotes = note.subnotes.fetch(None)
+        for s in subnotes:
+            self.delete_note(s)
+        note.delete();
+        return "Note deleted."
+    
+    def move_note(self, note, parent):
+        """
+            Moves a note to a new parent.
+        """
+        note.parentNote = parent
+        note.put()
+        return json.dumps(note.to_dict())
+
+
+    def get(self, op, note_id):
+        """
+            Handles HHTP GET requests.
         """
         try:
             ##################
@@ -41,129 +91,85 @@ class NoteController(webapp2.RequestHandler):
             #n2.put()
             #n3 = Note(content="... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",parentNote=n2)
             #n3.put()
-            #n4 = Note(content="The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.", parentNote=root, position=1)
+            #n4 = Note(content="The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.", parentNote=root)
             #n4.put()
             ##################
-            notes = Note.all().filter('parentNote ==', None).order('position').fetch(None)
-            res = []
-            for n in notes:
-                res.append(n.to_dict())
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps(res))
+            if op == 'list':
+                try:
+                    note = Note.get(note_id)
+                except datastore_errors.BadKeyError:
+                    note = None
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(self.list_notes(note))
+            else:
+                self.response.clear()
+                self.response.set_status(501)
+                self.response.out.write("Unknown operation.")
         except DeadlineExceededError:
             self.response.clear()
             self.response.set_status(500)
             self.response.out.write("This operation could not be completed in time...")
 
-    def post(self):
+    def post(self, op, note_id):
         """
-
-            Creates new note.
-        """
-        try:
-            parentId = self.request.get("parentId")
-            content  = self.request.get("content")
-            try:
-                parent = Note.get(parentId)
-            except datastore_errors.BadKeyError:
-                parent = None
-            try:
-                position = int(self.request.get("position"))
-                if parent:
-                    notes = parent.subnotes.filter('position >=', position).order('position').fetch(None)
-                else:
-                    notes = Note.all().filter('parentNote ==', None).filter('position >=', position).order('position').fetch(None)
-                for n in notes:
-                    n.position = n.position + 1
-                    n.put()
-            except ValueError:
-                if parent:
-                    position = parent.subnotes.count()
-                else:
-                    position = 0  
-            note = Note(content=content, position=position, parentNote=parent)
-            note.put()
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(json.dumps(note.to_dict()))
-        except DeadlineExceededError:
-            self.response.clear()
-            self.response.set_status(500)
-            self.response.out.write("This operation could not be completed in time...")
-
-    def put(self):
-        """
-            Update existing note.
+            Handles HHTP POST requests.
         """
         try:
-            noteId = self.request.get("id")
-            parentId = self.request.get("parentId")
-            content = self.request.get("content")
-            try:
-                parent = Note.get(parentId)
-            except datastore_errors.BadKeyError:
-                parent = None
-            try:
-                position = int(self.request.get("position"))
-                if parent:
-                    notes = parent.subnotes.filter('position >=', position).order('position').fetch(None)
-                else:
-                    notes = Note.all().filter('parentNote ==', None).filter('position >=', position).order('position').fetch(None)
-                cnt = position
-                for n in notes:
-                    cnt = cnt + 1
-                    n.position = cnt
-                    n.put()
-            except ValueError:
-                if parent:
-                    position = parent.subnotes.count()
-                else:
-                    position = 0  
-            try:
-                note = Note.get(noteId)
-                if note:
-                    note.content = content
-                    note.parentNote = parent
-                    note.position = position
-                    note.put()
+            if op == 'create':
+                pid = self.request.get("parentId")
+                content = self.request.get("content")
+                try:
+                    parent = Note.get(pid)
+                except datastore_errors.BadKeyError:
+                    parent = None
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(self.create_note(content, parent))
+            elif op == 'update':
+                content = self.request.get("content")
+                try:
+                    note = Note.get(note_id)
                     self.response.headers['Content-Type'] = 'application/json'
-                    self.response.out.write(json.dumps(note.to_dict()))
-                else:
+                    self.response.out.write(self.update_note(note, content))
+                except datastore_errors.BadKeyError:
                     self.response.clear()
                     self.response.set_status(404)
                     self.response.out.write("Note not found.")
-            except datastore_errors.BadKeyError:
+            elif op == 'delete':
+                try:
+                    note = Note.get(note_id)
+                    self.response.headers['Content-Type'] = 'application/json'
+                    self.response.out.write(self.delete_note(note))
+                except datastore_errors.BadKeyError:
+                    self.response.clear()
+                    self.response.set_status(404)
+                    self.response.out.write("Note not found.")
+            elif op == 'move':
+                pid = self.request.get("parentId")
+                try:
+                    parent = Note.get(pid)
+                    if parent:
+                        try:
+                            note = Note.get(note_id)
+                            self.response.headers['Content-Type'] = 'application/json'
+                            self.response.out.write(self.move_note(note, parent))
+                        except datastore_errors.BadKeyError:
+                            self.response.clear()
+                            self.response.set_status(404)
+                            self.response.out.write("Note not found.")
+                    else:
+                        self.response.clear()
+                        self.response.set_status(404)
+                        self.response.out.write("Note (parent) not found.")
+                except datastore_errors.BadKeyError:
+                    self.response.clear()
+                    self.response.set_status(404)
+                    self.response.out.write("Note (parent) not found.")
+            else:
                 self.response.clear()
-                self.response.set_status(404)
-                self.response.out.write("Note not found.")
+                self.response.set_status(501)
+                self.response.out.write("Unknown operation.")
         except DeadlineExceededError:
             self.response.clear()
             self.response.set_status(500)
             self.response.out.write("This operation could not be completed in time...")
 
-    def delete(self):
-        """
-            Delete existing note.
-        """
-        try:
-            data = urlparse.parse_qs(self.request.body)
-            noteId  = data["id"][0]
-            try:
-                note = Note.get(noteId)
-                note.delete()
-                if note.parentNote:
-                    notes = note.parentNote.subnotes.filter('position >=', note.position).order('position').fetch(None)
-                else:
-                    notes = Note.all().filter('parentNote ==', None).filter('position >=', note.position).order('position').fetch(None)
-                for n in notes:
-                    n.position = n.position - 1
-                    n.put()
-                self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write('{"result":"OK"}')
-            except datastore_errors.BadKeyError:
-                self.response.clear()
-                self.response.set_status(404)
-                self.response.out.write("Note not found.")
-        except DeadlineExceededError:
-            self.response.clear()
-            self.response.set_status(500)
-            self.response.out.write("This operation could not be completed in time...")

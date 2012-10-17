@@ -33,7 +33,7 @@ function NoteModel(data) {
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
     self.position    = ko.observable(data.position || 0);
-    self.lastUpdated = ko.observable(data.timestamp || null);
+    self.lastUpdated = ko.observable(data.updated || null);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
                        }, self);
@@ -298,7 +298,7 @@ function NoteModel(data) {
      * Send a request to the server to create a new note. 
      */
     self.remoteCreate = function() {
-        $.post("/note",
+        $.post("/note/create/",
             {
                 "parentId" : self.parent().id(),
                 "position" : self.parent().subnotes.indexOf(self),
@@ -306,7 +306,7 @@ function NoteModel(data) {
             },
             function(data) {
                 self.id(data.id);
-                self.lastUpdated(data.timestamp);
+                self.lastUpdated(data.updated);
             }
         );
     };
@@ -315,21 +315,16 @@ function NoteModel(data) {
      * Update a note on the server.
      */
     self.remoteUpdate = function() {
-        $.ajax({
-            url: "/note",
-            type: "PUT",
-            data: {
-                "id"       : self.id(),
-                "parentId" : self.parent().id(),
-                "position" : self.parent().subnotes.indexOf(self),
-                "content"  : self.content()                
+        $.post("/note/update/"+self.id(),
+            {
+                "content"  : self.content()
             },
-            success: function(data) {
-                self.lastUpdated(data.timestamp);
-            },
-            complete: function() {
-                self.isUpdateScheduled(false);
+            function(data) {
+                self.lastUpdated(data.updated);
             }
+        ).
+        complete(function() {
+            self.isUpdateScheduled(false);
         });
     };
     /**
@@ -337,17 +332,10 @@ function NoteModel(data) {
      * Delete a note on the server.
      */
     self.remoteDelete = function() {
-        $.ajax({
-            url: "/note",
-            type: "DELETE",
-            data: {
-                id: self.id()
-            },
-            success: function(data) {
-            },
-            complete: function() {
+        $.post("/note/delete/"+self.id(),
+            function(data) {
             }
-        });
+        );
     };
     
     /**
