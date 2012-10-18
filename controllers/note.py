@@ -68,11 +68,12 @@ class NoteController(webapp2.RequestHandler):
         note.delete();
         return "Note deleted."
     
-    def move_note(self, note, parent):
+    def move_note(self, note, parent, position):
         """
             Moves a note to a new parent.
         """
         note.parentNote = parent
+        note.position = position
         note.put()
         return json.dumps(note.to_dict())
 
@@ -91,7 +92,7 @@ class NoteController(webapp2.RequestHandler):
             #n2.put()
             #n3 = Note(content="... and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",parentNote=n2)
             #n3.put()
-            #n4 = Note(content="The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.", parentNote=root)
+            #n4 = Note(content="The path of the righteous man is beset on all sides by the iniquities of the selfish and the tyranny of evil men.", parentNote=root, position=1)
             #n4.put()
             ##################
             if op == 'list':
@@ -145,25 +146,19 @@ class NoteController(webapp2.RequestHandler):
                     self.response.out.write("Note not found.")
             elif op == 'move':
                 pid = self.request.get("parentId")
+                pos = int(self.request.get("position"))
                 try:
                     parent = Note.get(pid)
-                    if parent:
-                        try:
-                            note = Note.get(note_id)
-                            self.response.headers['Content-Type'] = 'application/json'
-                            self.response.out.write(self.move_note(note, parent))
-                        except datastore_errors.BadKeyError:
-                            self.response.clear()
-                            self.response.set_status(404)
-                            self.response.out.write("Note not found.")
-                    else:
-                        self.response.clear()
-                        self.response.set_status(404)
-                        self.response.out.write("Note (parent) not found.")
+                except datastore_errors.BadKeyError:
+                    parent = None
+                try:
+                    note = Note.get(note_id)
+                    self.response.headers['Content-Type'] = 'application/json'
+                    self.response.out.write(self.move_note(note, parent, pos))
                 except datastore_errors.BadKeyError:
                     self.response.clear()
                     self.response.set_status(404)
-                    self.response.out.write("Note (parent) not found.")
+                    self.response.out.write("Note not found.")
             else:
                 self.response.clear()
                 self.response.set_status(501)

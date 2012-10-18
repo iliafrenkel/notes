@@ -54,6 +54,7 @@ a:hover {
     letter-spacing: 2px;
     padding: 2px 8px;
     margin-left: 4px;
+    cursor: default;
 }
 #main-menu a, #main-menu a:visited {
     font-size: 75%;

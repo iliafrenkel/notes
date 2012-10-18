@@ -125,12 +125,14 @@ function NoteModel(data) {
      *                        within the same parent.
      */
     self.moveSubnote = function(note, opts, parent) {
+        prev = note.prevNote();
+        next = note.nextNote();
         self.subnotes.remove(note);
         if (parent) {
             note = parent.addSubnote(note, opts);
-            //!!!TEMPORARY
-            note.remoteUpdate();
-            //!!!
+            note.remoteMove();
+            if (prev) prev.remoteMove();
+            if (next) next.remoteMove();
             return note;
         } else {
             return self.addSubnote(note, opts);
@@ -336,6 +338,21 @@ function NoteModel(data) {
             function(data) {
             }
         );
+    };
+    /**
+     * @method
+     * Move a note to another parent on the server.
+     */
+    self.remoteMove = function() {
+        $.post("/note/move/"+self.id(),
+            {
+                "parentId" : self.parent().id(),
+                "position" : self.parent().subnotes.indexOf(self)
+            },
+            function(data) {
+                self.lastUpdated(data.updated);
+            }
+        )
     };
     
     /**

@@ -12,5 +12,10 @@ indexes:
 
 - kind: Note
   properties:
+  - name: parent
+  - name: position
+
+- kind: Note
+  properties:
   - name: parentNote
   - name: position
