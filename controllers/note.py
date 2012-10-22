@@ -41,12 +41,24 @@ class NoteController(webapp2.RequestHandler):
                 res.append(n.to_dict())
             return json.dumps(res)
 
-    def create_note(self, content, parent=None):
+    def create_note(self, content, parent=None, after=None):
         """
             Creates a new note, saves it to datastore and returns newly
-            created note as JSON string.
+            created note as JSON string. If `after` parameter is given,
+            new note will have position property set to be greater than
+            the one specified.
         """
-        note = Note(content=content, parentNote=parent)
+        if after:
+            position = after.position + 1
+        else:
+            position = 0
+        notes = Note.all().filter("position >=", position).filter("parentNote ==", parent).order("position").fetch(None)
+        cnt = 1
+        for n in notes:
+            n.position = position + cnt
+            n.put()
+            cnt = cnt + 1
+        note = Note(content=content, parentNote=parent, position=position)
         note.put()
         return json.dumps(note.to_dict())
 
@@ -68,10 +80,21 @@ class NoteController(webapp2.RequestHandler):
         note.delete();
         return "Note deleted."
     
-    def move_note(self, note, parent, position):
+    def move_note(self, note, parent, after=None):
         """
             Moves a note to a new parent.
         """
+        if after:
+            position = after.position + 1
+        else:
+            position = 0
+        notes = Note.all().filter("position >=", position).filter("parentNote ==", parent).order("position").fetch(None)
+        cnt = 1
+        for n in notes:
+            n.position = position + cnt
+            n.put()
+            cnt = cnt + 1
+
         note.parentNote = parent
         note.position = position
         note.put()
@@ -118,13 +141,18 @@ class NoteController(webapp2.RequestHandler):
         try:
             if op == 'create':
                 pid = self.request.get("parentId")
+                afterId = self.request.get("afterNote")
                 content = self.request.get("content")
                 try:
                     parent = Note.get(pid)
                 except datastore_errors.BadKeyError:
                     parent = None
+                try:
+                    after = Note.get(afterId)
+                except datastore_errors.BadKeyError:
+                    after = None
                 self.response.headers['Content-Type'] = 'application/json'
-                self.response.out.write(self.create_note(content, parent))
+                self.response.out.write(self.create_note(content, parent, after))
             elif op == 'update':
                 content = self.request.get("content")
                 try:
@@ -146,15 +174,19 @@ class NoteController(webapp2.RequestHandler):
                     self.response.out.write("Note not found.")
             elif op == 'move':
                 pid = self.request.get("parentId")
-                pos = int(self.request.get("position"))
+                afterId = self.request.get("afterNote")
                 try:
                     parent = Note.get(pid)
                 except datastore_errors.BadKeyError:
                     parent = None
                 try:
+                    after = Note.get(afterId)
+                except datastore_errors.BadKeyError:
+                    after = None
+                try:
                     note = Note.get(note_id)
                     self.response.headers['Content-Type'] = 'application/json'
-                    self.response.out.write(self.move_note(note, parent, pos))
+                    self.response.out.write(self.move_note(note, parent, after))
                 except datastore_errors.BadKeyError:
                     self.response.clear()
                     self.response.set_status(404)

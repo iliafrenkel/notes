@@ -125,14 +125,10 @@ function NoteModel(data) {
      *                        within the same parent.
      */
     self.moveSubnote = function(note, opts, parent) {
-        prev = note.prevNote();
-        next = note.nextNote();
         self.subnotes.remove(note);
         if (parent) {
-            note = parent.addSubnote(note, opts);
+            parent.addSubnote(note, opts);
             note.remoteMove();
-            if (prev) prev.remoteMove();
-            if (next) next.remoteMove();
             return note;
         } else {
             return self.addSubnote(note, opts);
@@ -300,10 +296,14 @@ function NoteModel(data) {
      * Send a request to the server to create a new note. 
      */
     self.remoteCreate = function() {
+        var afterNote = "";
+        if (self.prevNote()) {
+            afterNote = self.prevNote().id();
+        }
         $.post("/note/create/",
             {
                 "parentId" : self.parent().id(),
-                "position" : self.parent().subnotes.indexOf(self),
+                "afterNote": afterNote,
                 "content"  : self.content()
             },
             function(data) {
@@ -344,10 +344,14 @@ function NoteModel(data) {
      * Move a note to another parent on the server.
      */
     self.remoteMove = function() {
+        var afterNote = "";
+        if (self.prevNote()) {
+            afterNote = self.prevNote().id();
+        }
         $.post("/note/move/"+self.id(),
             {
                 "parentId" : self.parent().id(),
-                "position" : self.parent().subnotes.indexOf(self)
+                "afterNote" : afterNote
             },
             function(data) {
                 self.lastUpdated(data.updated);
