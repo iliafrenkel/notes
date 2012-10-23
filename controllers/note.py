@@ -27,15 +27,16 @@ class NoteController(webapp2.RequestHandler):
         This class handles all REST requests related to a Note.
     """
 
-    def list_notes(self, parent=None):
+    def list_notes(self, parent=None, list_deleted=False):
         """
-            Returns all notes as a JSON string. If parent is given returns
-            all notes starting from the parent.
+            Returns all notes (with sub-notes) as a JSON string. If parent is
+            given returns all notes starting from the parent. If `list_deleted`
+            is True returns only deleted notes.
         """
         if parent:
             return json.dumps(parent.to_dict())
         else:
-            notes = Note.all().filter('parentNote ==', None).order('position').fetch(None)
+            notes = Note.all().filter('parentNote ==', None).filter('deleted ==', list_deleted).order('position').fetch(None)
             res = []
             for n in notes:
                 res.append(n.to_dict())
@@ -72,13 +73,19 @@ class NoteController(webapp2.RequestHandler):
     
     def delete_note(self, note):
         """
-            Deletes a note and all its sub-notes.
+            Mark a note as deleted.
         """
-        subnotes = note.subnotes.fetch(None)
-        for s in subnotes:
-            self.delete_note(s)
-        note.delete();
-        return "Note deleted."
+        note.deleted = True
+        note.put()
+        return json.dumps(note.to_dict())
+    
+    def restore_note(self, note):
+        """
+            Restores previously deleted note.
+        """
+        note.deleted = False
+        note.put()
+        return json.dumps(note.to_dict())
     
     def move_note(self, note, parent, after=None):
         """
@@ -168,6 +175,15 @@ class NoteController(webapp2.RequestHandler):
                     note = Note.get(note_id)
                     self.response.headers['Content-Type'] = 'application/json'
                     self.response.out.write(self.delete_note(note))
+                except datastore_errors.BadKeyError:
+                    self.response.clear()
+                    self.response.set_status(404)
+                    self.response.out.write("Note not found.")
+            elif op == 'restore':
+                try:
+                    note = Note.get(note_id)
+                    self.response.headers['Content-Type'] = 'application/json'
+                    self.response.out.write(self.restore_note(note))
                 except datastore_errors.BadKeyError:
                     self.response.clear()
                     self.response.set_status(404)

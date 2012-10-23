@@ -40,7 +40,7 @@ class MainPage(webapp2.RequestHandler):
             self.response.out.write("This operation could not be completed in time...")
 
 application = webapp2.WSGIApplication([('/', MainPage),
-                                       ('/note/(list|create|update|delete|move)/(.*)', NoteController)], debug=True)
+                                       ('/note/(list|create|update|delete|restore|move)/(.*)', NoteController)], debug=True)
 
 
 def main():

@@ -33,6 +33,7 @@ function NoteModel(data) {
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
     self.position    = ko.observable(data.position || 0);
+    self.deleted     = ko.observable(data.deleted || false);
     self.lastUpdated = ko.observable(data.updated || null);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
@@ -109,8 +110,8 @@ function NoteModel(data) {
      */
     self.deleteSubnote = function(note) {
         self.subnotes.remove(note); //remove from sub-notes
-        note.remoteDelete();        //remove from server
-        note.lastUpdated(null);     //needed to re-create after undo        
+        note.deleted(true);
+        note.remoteDelete();        //mark for deletion on the server
         app.deletedNotes.push(note);//add to deletedNotes for undo        
         return note;
     };
@@ -336,6 +337,19 @@ function NoteModel(data) {
     self.remoteDelete = function() {
         $.post("/note/delete/"+self.id(),
             function(data) {
+                self.lastUpdated(data.updated);
+            }
+        );
+    };
+    /**
+     * @method
+     * Restore previously deleted note on the server.
+     */
+    self.remoteRestore = function() {
+        $.post("/note/restore/"+self.id(),
+            function(data) {
+                self.lastUpdated(data.updated);
+                self.deleted(data.deleted);
             }
         );
     };

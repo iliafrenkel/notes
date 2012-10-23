@@ -58,8 +58,8 @@
                 self.undo = function() {
                     if (self.deletedNotes().length > 0) {
                         var note = self.deletedNotes.pop();
-                        //restore the note
                         note.parent().addSubnote(note, {position: note.position()});
+                        note.remoteRestore();
                     }
                 };
             };

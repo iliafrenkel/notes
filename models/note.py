@@ -32,6 +32,7 @@ class Note(db.Model):
     created     = db.DateTimeProperty(auto_now_add=True)
     updated     = db.DateTimeProperty(auto_now=True)
     parentNote  = db.SelfReferenceProperty(collection_name='subnotes')
+    deleted     = db.BooleanProperty(required=True,default=False)
 
     def to_dict(self):
         """
@@ -47,5 +48,6 @@ class Note(db.Model):
                "position"    : self.position,
                "created"     : time.mktime(self.created.timetuple())*1000,
                "updated"     : time.mktime(self.updated.timetuple())*1000,
-               "subnotes"    : subnotes
+               "subnotes"    : subnotes,
+               "deleted"     : self.deleted
                }

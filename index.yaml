@@ -12,7 +12,8 @@ indexes:
 
 - kind: Note
   properties:
-  - name: parent
+  - name: deleted
+  - name: parentNote
   - name: position
 
 - kind: Note

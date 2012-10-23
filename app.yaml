@@ -8,7 +8,7 @@ handlers:
 - url: /res
   static_dir: static
 
-- url: /note/(list|create|update|delete|move)/(.*)
+- url: /note/(list|create|update|delete|restore|move)/(.*)
   script: main.application
   
   
