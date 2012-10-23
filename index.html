@@ -9,6 +9,7 @@
         <script type="text/javascript" src="/res/js/jquery-ui-1.8.17.custom.min.js"></script>
         <script type="text/javascript" src="/res/js/jquery.loadmask.min.js"></script>
         <script type="text/javascript" src="/res/js/knockout-2.1.0.js"></script>
+        <script type="text/javascript" src="/res/js/app.notes.js"></script>
         <script type="text/javascript" src="/res/js/model.noteslist.js"></script>
         <script type="text/javascript">
             function rndId() {
@@ -19,51 +20,6 @@
             };
         </script>
         <script>
-            function NotesApp() {
-                var self = this;
-
-                self.rootNote     = null;
-                self.listView     = null;
-                self.deletedNotes = ko.observableArray([]);
-                
-                self.init = function() {
-                    // Create the root note and initialise bindings
-                    self.rootNote = new NoteModel({content:"Home"});
-                    self.listView = new NotesListViewModel(self.rootNote)
-                    ko.applyBindings(self, document.getElementById("content"));
-                    
-                    // Load notes from the server
-                    $("#root").mask("Loading notes...", 300);
-                    $.getJSON("/note/list/", function(data){
-                        self.rootNote.loadSubnotes(data);
-                        $("#root").unmask();
-                        if (self.rootNote.hasSubnotes()) {
-                            self.rootNote.subnotes()[0].startEdit();
-                        }
-                    })
-                    .error(function(res) {
-                        alert("Error occured while loading notes from the server.")
-                    });
-                    
-                    // Setup global keyboard shortcuts
-                    $('body').on('keydown', function(event){
-                        if (event.which==107) {
-                            self.rootNote.addSubnote().startEdit();
-                            return false;
-                        }
-                        return true;
-                    });
-                };
-                
-                self.undo = function() {
-                    if (self.deletedNotes().length > 0) {
-                        var note = self.deletedNotes.pop();
-                        note.parent().addSubnote(note, {position: note.position()});
-                        note.remoteRestore();
-                    }
-                };
-            };
-            
             var app = new NotesApp();
             $(document).ready(function() {
                 app.init();
@@ -72,7 +28,7 @@
         <!-- NOTES TEMPLATE -->
         <script type="text/html" id="note-template">
             <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
-            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: app.listView.zoomIn, css: {saving: isUpdateScheduled}">•</a>
+            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: app.listView.zoomIn, css: {saving: !isSaved()}">•</a>
             <!-- ko ifnot: isZoomedIn -->
                 <div class="drop-target above"></div>
             <!-- /ko -->
@@ -108,7 +64,7 @@
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
                     <a href="javascript:void(0)" data-bind="click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
-                    <a href="javascript:void(0)">Save</a>
+                    <a href="javascript:void(0)" class="disabled">Save</a>
                 </div>
             </div>
             <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: app.listView.rootNote}">
@@ -120,7 +76,7 @@
             </div>
         </div>
         <div id="footer">
-            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build using Google App Engine.&nbsp;|&nbsp;<a href="/_ah/admin/">Admin</a>
+            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build on <a href="https://developers.google.com/appengine/">Google App Engine</a>.&nbsp;|&nbsp;<a href="/_ah/admin/">Admin</a>
         </div>
     </body>
 </html>

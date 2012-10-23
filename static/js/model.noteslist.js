@@ -44,7 +44,7 @@ function NoteModel(data) {
     self.isOpen      = ko.observable(data.isOpen || false);
     self.isInEdit    = ko.observable(false);
     self.isZoomedIn  = ko.observable(false);
-    self.isUpdateScheduled = ko.observable(false);
+    self.isSaved     = ko.observable(true);
 
     /**
      * Note model methods that manipulate sub-notes and position.
@@ -327,7 +327,7 @@ function NoteModel(data) {
             }
         ).
         complete(function() {
-            self.isUpdateScheduled(false);
+            self.isSaved(true);
         });
     };
     /**
@@ -382,9 +382,9 @@ function NoteModel(data) {
     });
     //subscribe to changes of content to save it to the server periodically
     self.content.subscribe(function(newValue){
-        if (!self.isUpdateScheduled()) {
+        if (self.isSaved()) {
             setTimeout(self.remoteUpdate, 3000);
-            self.isUpdateScheduled(true);
+            self.isSaved(false);
         }
     });
 
