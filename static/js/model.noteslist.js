@@ -33,8 +33,9 @@ function NoteModel(data) {
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
     self.position    = ko.observable(data.position || 0);
-    self.deleted     = ko.observable(data.deleted || false);
+    self.isDeleted   = ko.observable(data.deleted || false);
     self.lastUpdated = ko.observable(data.updated || null);
+    self.created     = ko.observable(data.created || null);
     self.hasSubnotes = ko.computed(function() {
                         return self.subnotes().length > 0;
                        }, self);
@@ -44,7 +45,8 @@ function NoteModel(data) {
     self.isOpen      = ko.observable(data.isOpen || false);
     self.isInEdit    = ko.observable(false);
     self.isZoomedIn  = ko.observable(false);
-    self.isSaved     = ko.observable(true);
+    self.isDirty     = ko.observable(false);
+    self.isNew       = ko.observable(false);
 
     /**
      * Note model methods that manipulate sub-notes and position.
@@ -84,9 +86,8 @@ function NoteModel(data) {
         } else {
             self.subnotes.push(note);
         };
-        //post new note to the server
         if (!note.lastUpdated()) {
-            note.remoteCreate();
+            note.isNew(true);
         };
         return note;
     };
@@ -110,7 +111,7 @@ function NoteModel(data) {
      */
     self.deleteSubnote = function(note) {
         self.subnotes.remove(note); //remove from sub-notes
-        note.deleted(true);
+        note.isDeleted(true);
         note.remoteDelete();        //mark for deletion on the server
         app.deletedNotes.push(note);//add to deletedNotes for undo        
         return note;
@@ -280,6 +281,11 @@ function NoteModel(data) {
         //BACKSPACE
         } else if (event.which == 8) {
             if ((event.target.selectionStart==event.target.selectionEnd) && (event.target.selectionEnd==0)) {
+                if (note.prevNote()) {
+                    note.prevNote().startEdit();
+                } else if (note.parent()) {
+                    note.parent().startEdit();
+                };
                 note.parent().deleteSubnote(note);
             } else {
                 return true;
@@ -310,6 +316,7 @@ function NoteModel(data) {
             function(data) {
                 self.id(data.id);
                 self.lastUpdated(data.updated);
+                self.isNew(false);
             }
         );
     };
@@ -327,7 +334,7 @@ function NoteModel(data) {
             }
         ).
         complete(function() {
-            self.isSaved(true);
+            self.isDirty(false);
         });
     };
     /**
@@ -349,7 +356,7 @@ function NoteModel(data) {
         $.post("/note/restore/"+self.id(),
             function(data) {
                 self.lastUpdated(data.updated);
-                self.deleted(data.deleted);
+                self.isDeleted(data.deleted);
             }
         );
     };
@@ -382,10 +389,7 @@ function NoteModel(data) {
     });
     //subscribe to changes of content to save it to the server periodically
     self.content.subscribe(function(newValue){
-        if (self.isSaved()) {
-            setTimeout(self.remoteUpdate, 3000);
-            self.isSaved(false);
-        }
+        self.isDirty(true);
     });
 
     return self;

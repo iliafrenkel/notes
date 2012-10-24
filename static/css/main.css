@@ -249,7 +249,10 @@ a.zoom-in-link {
     left: 20px;
     z-index: 101;
 }
-a.zoom-in-link.saving {
+a.zoom-in-link.new {
+    background-color: #dfd;
+}
+a.zoom-in-link.changed {
     background-color: #fdd;
 }
 a.open-link:hover {

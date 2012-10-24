@@ -54,6 +54,9 @@ function NotesApp() {
             }
             return true;
         });
+        
+        //Start regular server sync
+        setInterval(self.syncWithServer, 2000);
     };
     
     self.undo = function() {
@@ -62,6 +65,19 @@ function NotesApp() {
             note.parent().addSubnote(note, {position: note.position()});
             note.remoteRestore();
         }
+    };
+    
+    self.syncWithServer = function() {
+        if (!self.rootNote) return;
+        function sync_note(note) {
+            if (note.isNew()) {
+                note.remoteCreate();
+            } else if (note.isDirty()) {
+                note.remoteUpdate();
+            };
+            $.each(note.subnotes(), function(idx,val){sync_note(val)});
+        };
+        $.each(self.rootNote.subnotes(), function(idx,val){sync_note(val)});
     };
     
     return self;

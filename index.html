@@ -28,7 +28,7 @@
         <!-- NOTES TEMPLATE -->
         <script type="text/html" id="note-template">
             <div class="note" data-bind="attr: {id: id}, css: {closed: !isOpen()}">
-            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: app.listView.zoomIn, css: {saving: !isSaved()}">•</a>
+            <a href="javascript:void(0)" class="open-link" data-bind="visible: hasSubnotes() && !isZoomedIn(), click: toggleOpen, text: isOpen() ? '-' : '+'">+</a><a href="#" class="zoom-in-link" data-bind="attr: {href: hash}, click: app.listView.zoomIn, css: {changed: isDirty, new: isNew}">•</a>
             <!-- ko ifnot: isZoomedIn -->
                 <div class="drop-target above"></div>
             <!-- /ko -->
@@ -63,7 +63,7 @@
             <div id="main-menu">
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
-                    <a href="javascript:void(0)" data-bind="click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
+                    <a href="javascript:void(0)" data-bind="text: 'Undo (' + deletedNotes().length + ')', click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
                     <a href="javascript:void(0)" class="disabled">Save</a>
                 </div>
             </div>
