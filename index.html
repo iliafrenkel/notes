@@ -63,8 +63,11 @@
             <div id="main-menu">
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
-                    <a href="javascript:void(0)" data-bind="text: 'Undo (' + deletedNotes().length + ')', click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
-                    <a href="javascript:void(0)" class="disabled">Save</a>
+                    <a href="javascript:void(0)" class="button" data-bind="text: 'Undo (' + deletedNotes().length + ')', click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
+                    <a href="javascript:void(0)" class="button disabled">Save</a>
+                    <span id="user_info">
+                        {{user_nickname}} (<a href="{{logout_url}}">logout</a>)
+                    </span>
                 </div>
             </div>
             <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: app.listView.rootNote}">
@@ -76,7 +79,8 @@
             </div>
         </div>
         <div id="footer">
-            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build on <a href="https://developers.google.com/appengine/">Google App Engine</a>.&nbsp;|&nbsp;<a href="/_ah/admin/">Admin</a>
+            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build on <a href="https://developers.google.com/appengine/">Google App Engine</a>.{{admin_link}}
         </div>
     </body>
 </html>
+<!-- {{user_id}} -->

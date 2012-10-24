@@ -331,10 +331,11 @@ function NoteModel(data) {
             },
             function(data) {
                 self.lastUpdated(data.updated);
+                self.isDirty(false);
             }
         ).
-        complete(function() {
-            self.isDirty(false);
+        error(function(res) {
+            alert("Server returned an error while trying to save the note.");
         });
     };
     /**
@@ -346,7 +347,10 @@ function NoteModel(data) {
             function(data) {
                 self.lastUpdated(data.updated);
             }
-        );
+        ).
+        error(function(res) {
+            alert("Server returned an error while trying to delete the note.");
+        });
     };
     /**
      * @method
@@ -358,7 +362,10 @@ function NoteModel(data) {
                 self.lastUpdated(data.updated);
                 self.isDeleted(data.deleted);
             }
-        );
+        ).
+        error(function(res) {
+            alert("Server returned an error while trying to restore the note.");
+        });
     };
     /**
      * @method
@@ -377,7 +384,10 @@ function NoteModel(data) {
             function(data) {
                 self.lastUpdated(data.updated);
             }
-        )
+        ).
+        error(function(res) {
+            alert("Server returned an error while trying to move the note.");
+        });
     };
     
     /**

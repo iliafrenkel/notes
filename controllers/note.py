@@ -17,6 +17,8 @@
 import webapp2
 from google.appengine.runtime import DeadlineExceededError
 from google.appengine.api import datastore_errors
+from google.appengine.api import namespace_manager
+from google.appengine.ext import db
 from models.note import Note
 import json
 import time
@@ -146,6 +148,15 @@ class NoteController(webapp2.RequestHandler):
             Handles HHTP POST requests.
         """
         try:
+            try:
+                if db.Key(note_id).namespace() != namespace_manager.get_namespace():
+                    self.response.clear()
+                    self.response.set_status(401)
+                    self.response.out.write("You are not authorised to access this resource.")
+                    return
+            except datastore_errors.BadKeyError:
+                pass
+
             if op == 'create':
                 pid = self.request.get("parentId")
                 afterId = self.request.get("afterNote")

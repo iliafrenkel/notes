@@ -1,5 +1,5 @@
 #
-# Copyright 2011, Ilia Frenkel <frenkel.ilia@gmail.com>
+# Copyright 2012, Ilia Frenkel <frenkel.ilia@gmail.com>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import webapp2
-#from google.appengine.ext.webapp import template
+from google.appengine.api import users
 from google.appengine.runtime import DeadlineExceededError
 
 from controllers.note import NoteController
@@ -33,7 +33,17 @@ class MainPage(webapp2.RequestHandler):
         try:
             self.response.headers['Content-Type'] = 'text/html'
             template = jinja_environment.get_template('index.html')
-            self.response.out.write(template.render({}))
+            if users.is_current_user_admin():
+                admin_link = '&nbsp;|&nbsp;<a href="/_ah/admin/">Admin</a>'
+            else:
+                admin_link = ''
+            template_values = {
+                'user_nickname': users.get_current_user().nickname(),
+                'logout_url': users.create_logout_url(self.request.uri),
+                'admin_link': admin_link,
+                'user_id': users.get_current_user().user_id()
+            }
+            self.response.out.write(template.render(template_values))
         except DeadlineExceededError:
             self.response.clear()
             self.response.set_status(500)
