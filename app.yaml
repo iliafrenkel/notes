@@ -1,4 +1,4 @@
-application: notes
+application: thefrenkels-notes
 version: 1
 runtime: python27
 api_version: 1
@@ -7,6 +7,10 @@ threadsafe: true
 handlers:
 - url: /res
   static_dir: static
+
+- url: /favicon\.ico
+  static_files: static/img/logo.ico
+  upload: static/img/logo\.ico
 
 - url: /note/(list|create|update|delete|restore|move)/(.*)
   script: main.application

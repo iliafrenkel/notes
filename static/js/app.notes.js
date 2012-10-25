@@ -55,6 +55,21 @@ function NotesApp() {
             return true;
         });
         
+        // Initialise common dialogues
+        $("#help-dialog").dialog({
+            autoOpen: false,
+            buttons: [{
+                text: "Close",
+                click: function(){$(this).dialog("close");}
+            }],
+            modal: false,
+            resizable: false,
+            dialogClass: "common-dialog",
+            width: 700,
+            height: 600
+        });
+        $("#help-tabs").tabs();
+        
         //Start regular server sync
         setInterval(self.syncWithServer, 2000);
     };
@@ -78,6 +93,10 @@ function NotesApp() {
             $.each(note.subnotes(), function(idx,val){sync_note(val)});
         };
         $.each(self.rootNote.subnotes(), function(idx,val){sync_note(val)});
+    };
+    
+    self.showHelpDialog = function() {
+        $("#help-dialog").dialog("open");
     };
     
     return self;

@@ -226,4 +226,3 @@ class NoteController(webapp2.RequestHandler):
             self.response.clear()
             self.response.set_status(500)
             self.response.out.write("This operation could not be completed in time...")
-

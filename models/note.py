@@ -27,7 +27,7 @@ class Note(db.Model):
         Note model class.
         Properties:
     """
-    content     = db.StringProperty()
+    content     = db.TextProperty()
     position    = db.IntegerProperty(required=True,default=0)
     created     = db.DateTimeProperty(auto_now_add=True)
     updated     = db.DateTimeProperty(auto_now=True)

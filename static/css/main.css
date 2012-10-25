@@ -12,6 +12,7 @@ body {
 a, a:visited {
     text-decoration: none;
     color: #4D90FE;
+    outline: none;
 }
 a:hover {
     text-decoration: underline;
@@ -386,3 +387,54 @@ a.zoom-in-link:hover {
     visibility: hidden !important;
 }
 /**/
+
+/*
+ * Common dialog
+ */
+.common-dialog {
+    box-shadow: 6px 6px 10px 4px #ccc;
+    font-family: Helvetica, Arial, Sans-Serif;
+    /*font-family: Georgia, "Times New Roman", Serif;*/
+    font-size: .75em;
+    line-height: 1.4em;
+}
+.common-dialog .ui-tabs {
+    border: none;
+    padding: 0;
+    /*font-family: Helvetica, Arial, Sans-Serif;*/
+    font-family: Georgia, "Times New Roman", Serif;
+    font-size: 1.2em;
+    line-height: 1.4em;
+}
+.common-dialog .ui-tabs-nav {
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+    background: transparent;
+    font-family: Helvetica, Arial, Sans-Serif;
+    font-size: .75em;
+}
+.common-dialog .ui-tabs-nav li {
+    font-weight: bold;
+    outline: none;
+}
+.common-dialog a, .common-dialog a:visited {
+    text-decoration: underline;
+    color: #4D90FE;
+}
+.common-dialog .ui-dialog-titlebar {
+    border: none;
+    background: transparent;
+    font-size: 1.1em;
+    font-variant: small-caps;
+}
+.common-dialog .ui-dialog-buttonpane {
+    border: none;
+    padding: 0;
+}
+.common-dialog .ui-button {
+    font-family: Helvetica, Arial, Sans-Serif;
+    font-weight: bold;
+    background: transparent;
+    border-color: #ccc;
+    outline: none;
+}
