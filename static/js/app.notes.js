@@ -57,7 +57,7 @@ function NotesApp() {
         
         // Initialise common dialogues
         $("#help-dialog").dialog({
-            autoOpen: false,
+            autoOpen: true,
             buttons: [{
                 text: "Close",
                 click: function(){$(this).dialog("close");}
@@ -66,12 +66,25 @@ function NotesApp() {
             resizable: false,
             dialogClass: "common-dialog",
             width: 700,
-            height: 600
+            height: 740
         });
         $("#help-tabs").tabs();
+
+        $("#error-dialog").dialog({
+            autoOpen: false,
+            buttons: [{
+                text: "Close",
+                click: function(){$(this).dialog("close");}
+            }],
+            modal: true,
+            resizable: false,
+            dialogClass: "common-dialog",
+            width: 400,
+            height: 300
+        });
         
         //Start regular server sync
-        setInterval(self.syncWithServer, 2000);
+        setInterval(self.syncWithServer, 5000);
     };
     
     self.undo = function() {
@@ -99,5 +112,15 @@ function NotesApp() {
         $("#help-dialog").dialog("open");
     };
     
+    self.showErrorDialog = function(errMsg) {
+        $("#error-dialog .error-message").text(errMsg);
+        $("#error-dialog").dialog("open");
+    };
+
+    self.showErrorPopup = function(errMsg) {
+        $("#error-popup .error-message").text(errMsg);
+        $("#error-popup").show("slow");
+        setTimeout(function(){$("#error-popup").hide("slow")}, 3000);
+    };    
     return self;
 };

@@ -335,7 +335,7 @@ function NoteModel(data) {
             }
         ).
         error(function(res) {
-            alert("Server returned an error while trying to save the note.");
+            app.showErrorPopup("Server returned an error while trying to save the note. I will try again in a moment.");
         });
     };
     /**
@@ -349,7 +349,7 @@ function NoteModel(data) {
             }
         ).
         error(function(res) {
-            alert("Server returned an error while trying to delete the note.");
+            app.showErrorPopup("Server returned an error while trying to delete the note. I will try again in a moment.");
         });
     };
     /**
@@ -364,7 +364,7 @@ function NoteModel(data) {
             }
         ).
         error(function(res) {
-            alert("Server returned an error while trying to restore the note.");
+            app.showErrorPopup("Server returned an error while trying to restore the note. I will try again in a moment.");
         });
     };
     /**
@@ -386,7 +386,7 @@ function NoteModel(data) {
             }
         ).
         error(function(res) {
-            alert("Server returned an error while trying to move the note.");
+            app.showErrorPopup("Server returned an error while trying to move the note. I will try again in a moment.");
         });
     };
     

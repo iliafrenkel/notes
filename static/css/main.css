@@ -401,7 +401,6 @@ a.zoom-in-link:hover {
 .common-dialog .ui-tabs {
     border: none;
     padding: 0;
-    /*font-family: Helvetica, Arial, Sans-Serif;*/
     font-family: Georgia, "Times New Roman", Serif;
     font-size: 1.2em;
     line-height: 1.4em;
@@ -437,4 +436,29 @@ a.zoom-in-link:hover {
     background: transparent;
     border-color: #ccc;
     outline: none;
+}
+/**/
+/*
+ * Help dialogue classes
+ */
+.keyboard-key {
+    border: solid 1px #aaa;
+    border-radius: 3px;
+    padding: 0 .5em;
+    height: 1.4em;
+    float:left;
+    line-height: 1.6em;
+    text-align: center;
+    font-weight: bold;
+    font-family: Calibri, Verdana, Tahoma, sans-serif;
+    box-shadow: 2px 2px 3px #ccc;
+    color: #444;
+    background: rgb(255,255,255);
+    background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(229,229,229,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(229,229,229,1)));
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
+    background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
+    background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
+    background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 );
 }
