@@ -57,7 +57,7 @@ function NotesApp() {
         
         // Initialise common dialogues
         $("#help-dialog").dialog({
-            autoOpen: true,
+            autoOpen: false,
             buttons: [{
                 text: "Close",
                 click: function(){$(this).dialog("close");}
