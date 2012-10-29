@@ -7,12 +7,12 @@
         <link rel="apple-touch-icon" href="/res/img/logo.png"/>
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" />
         <link rel="stylesheet" href="/res/css/main.css" media="screen"/>
-        <link rel="stylesheet" href="/res/css/print-preview.css" />
         <link rel="stylesheet" href="/res/css/print.css" media="print" />
         <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.js"></script>
         <script type="text/javascript" src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+        <!--script type="text/javascript" src="/res/js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="/res/js/jquery-ui-1.8.17.custom.min.js"></script-->
         <script type="text/javascript" src="/res/js/jquery.loadmask.min.js"></script>
-        <script type="text/javascript" src="/res/js/jquery.print-preview.js"></script>
         <script type="text/javascript" src="/res/js/knockout-2.1.0.js"></script>
         <script type="text/javascript" src="/res/js/app.notes.js"></script>
         <script type="text/javascript" src="/res/js/model.noteslist.js"></script>
@@ -69,7 +69,7 @@
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
                     <a href="javascript:void(0)" class="button" data-bind="text: 'Undo (' + deletedNotes().length + ')', click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
-                    <a href="javascript:void(0)" id="print-preview" class="button">Print...</a>
+                    <a href="javascript:void(0)" class="button" data-bind="click: printPreview">Print...</a>
                     <a href="javascript:void(0)" class="button" data-bind="click: exportNotes">Export...</a>
                     <a href="javascript:void(0)" class="button" data-bind="click: showHelpDialog">Help</a>
                     <span id="user_info">

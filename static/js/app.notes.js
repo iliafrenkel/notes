@@ -94,8 +94,6 @@ function NotesApp() {
             width: 600,
             height: 400
         });
-        // Initialise print preview
-        $("#print-preview").printPreview();
         
         //Start regular server sync
         setInterval(self.syncWithServer, 5000);
@@ -139,6 +137,10 @@ function NotesApp() {
     
     self.searchTag = function(tag) {
         self.showErrorDialog("You tried to search for notes with '"+tag+"' tag. Unfortunately this function is not implemented yet.");
+    };
+
+    self.printPreview = function() {
+    	window.print();
     };
     
     self.exportNotes = function() {

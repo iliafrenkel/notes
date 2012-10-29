@@ -17,10 +17,19 @@ a, a:visited {
 a:hover {
     text-decoration: underline;
 }
+.content a, .content a:visited {
+    text-decoration: underline;
+    color: #888;
+}
+.content a:hover {
+    color: #222;
+}
 a.tag-link, a.tag-link:visited {
+    text-decoration: none;
     color: #999;
 }
 a.tag-link:hover {
+    text-decoration: underline;
     color: #333;
 }
 ::-webkit-scrollbar {
@@ -147,18 +156,12 @@ a.tag-link:hover {
 }
 .note {
     /*font-size: 20px;*/
-    margin: 8px 0px;
+    margin: 0 0 3px 0;
     padding: 0 0 1px 46px;
     position: relative;
     vertical-align: baseline;
 }
 .sub-notes {
-    font-size: 90%;
-    line-height: 19px;
-    /*    margin: 8px 0px;
-     padding: 0 0 0 46px;
-     position: relative;
-     vertical-align: baseline;*/
 }
 .editor {
     margin: 3px 0;
@@ -297,18 +300,19 @@ a.zoom-in-link:hover {
 .drop-target {
     position: absolute;
     left: 40px;
-    height: 4px;
+    height: 3px;
     width: 94%;
     z-index: 100;
+    margin: 0;
 }
 .drop-target.above {
-    top: -8px;
+    top: 0px;
 }
 .drop-target.below {
-    bottom: -8px;
+    bottom: 0px;
 }
 .droppable {
-    background-color: #ccc;
+    background-color: #999;
 }
 .droppable.above {
     border-top: solid 1px #222;
@@ -377,7 +381,6 @@ a.zoom-in-link:hover {
     padding:5px 10px 5px 25px;
     background: #fbfbfb url('/res/img/loading.gif') no-repeat 5px 5px;
     line-height: 16px;
-    /*border:1px solid #777;*/
     border-radius: 3px;
     color:#222;
     font:normal 11px verdana, tahoma, arial, helvetica, sans-serif;
@@ -401,7 +404,6 @@ a.zoom-in-link:hover {
 .common-dialog {
     box-shadow: 6px 6px 10px 4px #ccc;
     font-family: Helvetica, Arial, Sans-Serif;
-    /*font-family: Georgia, "Times New Roman", Serif;*/
     font-size: .75em;
     line-height: 1.4em;
 }
