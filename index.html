@@ -36,7 +36,7 @@
             <!-- /ko -->
             <div class="editor" style="position:relative">
             <div class="drag-handler" title="Drag to reorder">&nbsp;</div>
-            <div class="content" data-bind="text: content, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
+            <div class="content" data-bind="html: contentFormatted, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
             <textarea class="content" placeholder="Just start typing" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
             </div>
             <!-- ko ifnot: isZoomedIn -->
@@ -66,6 +66,8 @@
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
                     <a href="javascript:void(0)" class="button" data-bind="text: 'Undo (' + deletedNotes().length + ')', click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
+                    <a href="javascript:void(0)" class="button disabled">Print...</a>
+                    <a href="javascript:void(0)" class="button disabled">Export...</a>
                     <a href="javascript:void(0)" class="button" data-bind="click: showHelpDialog">Help</a>
                     <span id="user_info">
                         {{user_nickname}} (<a href="{{logout_url}}">logout</a>)
@@ -75,7 +77,7 @@
             <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: app.listView.rootNote}">
             </div>
             <div id="root">
-                <h2 data-bind="text:app.listView.rootNote().content"></h2>
+                <h2 data-bind="html:app.listView.rootNote().contentFormatted"></h2>
                 <div id="subnotes" data-bind="template: {name: 'note-template', foreach: app.listView.rootNote().subnotes, afterRender: function(elements, data) {setTimeout(function(){app.listView._setupDragDrop(elements,data);},1000)}}"></div>
                 <a id="add-note" href="javascript:void(0)" title="Add new note" data-bind="click: function(){app.listView.rootNote().addSubnote().startEdit();}">+</a>
             </div>

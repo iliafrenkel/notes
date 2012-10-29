@@ -30,6 +30,11 @@ function NoteModel(data) {
      */
     self.id          = ko.observable(data.id || rndId());
     self.content     = ko.observable(data.content || "");
+    self.contentFormatted = ko.computed(function() {
+            var linkRegexp = /(\b(https?|ftp|file):\/\/[\-A-Z0-9+&@#\/%?=~_|!:,.;]*[\-A-Z0-9+&@#\/%=~_|])/ig;
+            var tagRegexp = /\s#(\w+)/g;
+            return self.content().replace(tagRegexp, '<a href="#$1" class="tag-link">$&</a>').replace(linkRegexp, '<a href="$&">$&</a>');
+        }, self);
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
     self.position    = ko.observable(data.position || 0);

@@ -17,6 +17,12 @@ a, a:visited {
 a:hover {
     text-decoration: underline;
 }
+a.tag-link, a.tag-link:visited {
+    color: #999;
+}
+a.tag-link:hover {
+    color: #333;
+}
 ::-webkit-scrollbar {
     width: 12px;
     background: #f0f0f0;
