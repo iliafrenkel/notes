@@ -1,0 +1,22 @@
+body {
+    font-family: Consolas, "Lucida Console", Monospace; 
+    font-family: Georgia, "Times New Roman", Serif;
+    font-size: 100%;
+    color: black;
+    background-color: white;
+    vertical-align: baseline;
+    line-height: 1.2;
+}
+#main-menu, #breadcrumbs, a.open-link, a.zoom-in-link, #add-note, #footer {
+    display: none;
+    visibility: hidden;
+}
+#root {
+    width: 100%;
+    position: static;
+}
+.note {
+    padding: 0 0 0 16px;
+    border-left: dotted 1px #ccc;
+    line-height: 1em;
+}

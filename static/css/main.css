@@ -2,7 +2,7 @@ body {
     font-family: Georgia, "Times New Roman", Serif;
     /*font-family: Consolas, "Lucida Console", Monospace;*/ 
     /*font-family: Calibri, Arial, Sans-Serif;*/
-    font-size: 110%;
+    font-size: 100%;
     color: #666;
     background-color: #f2f2f2;
     background-image: url('../img/body-bg.png');
@@ -154,6 +154,7 @@ a.tag-link:hover {
 }
 .sub-notes {
     font-size: 90%;
+    line-height: 19px;
     /*    margin: 8px 0px;
      padding: 0 0 0 46px;
      position: relative;
@@ -484,4 +485,17 @@ a.zoom-in-link:hover {
     background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
     background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 );
+}
+/**/
+/*
+ * Export dialogue
+ */
+#export-content {
+    font-family: Consolas, "Lucida Console", Monospace;
+    border: solid 1px #ccc;
+    outline: none;
+    -moz-tab-size: 2;
+    -o-tab-size: 2;
+    -webkit-tab-size: 2;
+    tab-size: 2;
 }

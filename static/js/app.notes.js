@@ -66,7 +66,7 @@ function NotesApp() {
             resizable: false,
             dialogClass: "common-dialog",
             width: 700,
-            height: 740
+            height: 650
         });
         $("#help-tabs").tabs();
 
@@ -79,9 +79,23 @@ function NotesApp() {
             modal: true,
             resizable: false,
             dialogClass: "common-dialog",
-            width: 400,
-            height: 300
+            width: 400
         });
+        
+        $("#export-dialog").dialog({
+            autoOpen: false,
+            buttons: [{
+                text: "Close",
+                click: function(){$(this).dialog("close");}
+            }],
+            modal: true,
+            resizable: true,
+            dialogClass: "common-dialog",
+            width: 600,
+            height: 400
+        });
+        // Initialise print preview
+        $("#print-preview").printPreview();
         
         //Start regular server sync
         setInterval(self.syncWithServer, 5000);
@@ -122,5 +136,29 @@ function NotesApp() {
         $("#error-popup").show("slow");
         setTimeout(function(){$("#error-popup").hide("slow")}, 3000);
     };    
+    
+    self.searchTag = function(tag) {
+        self.showErrorDialog("You tried to search for notes with '"+tag+"' tag. Unfortunately this function is not implemented yet.");
+    };
+    
+    self.exportNotes = function() {
+        function print_note(note, indent) {
+            var res = " * " + note.content();
+            if (note.hasSubnotes()) {
+                //res = res + "\n";
+                $.each(note.subnotes(), function(idx, val){
+                    res = res + "\n" + indent +print_note(val,indent+"\t");
+                });
+                //res = res + "\n";
+            }
+            return res;
+        };
+        var indent = "\t";
+        var output = print_note(self.listView.rootNote(), indent);
+        $("#export-content").text(output);
+        $("#export-dialog").dialog("open");
+        $("#export-content").select();        
+    };
+
     return self;
 };

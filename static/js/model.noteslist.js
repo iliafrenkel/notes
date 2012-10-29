@@ -33,7 +33,7 @@ function NoteModel(data) {
     self.contentFormatted = ko.computed(function() {
             var linkRegexp = /(\b(https?|ftp|file):\/\/[\-A-Z0-9+&@#\/%?=~_|!:,.;]*[\-A-Z0-9+&@#\/%=~_|])/ig;
             var tagRegexp = /\s#(\w+)/g;
-            return self.content().replace(tagRegexp, '<a href="#$1" class="tag-link">$&</a>').replace(linkRegexp, '<a href="$&">$&</a>');
+            return self.content().replace(tagRegexp, '<a href="#$1" class="tag-link" onclick="app.searchTag(\'$1\')">$&</a>').replace(linkRegexp, '<a href="$&">$&</a>');
         }, self);
     self.subnotes    = ko.observableArray([]);
     self.parent      = ko.observable(data.parent || null);
@@ -193,7 +193,8 @@ function NoteModel(data) {
      * Set the note into edit mode allowing user to make some changes. 
      */
     self.startEdit = function() {
-        self.isInEdit(true);  
+        self.isInEdit(true);
+        return true;  
     };
     /**
      * @method
