@@ -7,6 +7,9 @@ body {
     vertical-align: baseline;
     line-height: 1.2;
 }
+a.tag-link, a.tag-link:visited {
+    text-decoration: none;
+}
 #main-menu, #breadcrumbs, a.open-link, a.zoom-in-link, #add-note, #footer {
     display: none;
     visibility: hidden;
@@ -17,6 +20,12 @@ body {
 }
 .note {
     padding: 0 0 0 16px;
-    border-left: dotted 1px #ccc;
     line-height: 1em;
+}
+.content:before {
+    content: " \2022\ ";
+    font-size: 1.4em;
+}
+.content {
+    line-height: 1.4em;
 }
