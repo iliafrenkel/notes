@@ -1,0 +1,9 @@
+body {
+    font-family: Consolas, "Lucida Console", Monospace;
+    font-size: 100%;
+    color: #666;
+    background-color: #f2f2f2;
+    background-image: url('../img/body-bg.png');
+    vertical-align: baseline;
+    line-height: 1.2;
+}

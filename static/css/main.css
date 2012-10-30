@@ -1,5 +1,5 @@
 body {
-    font-family: Georgia, "Times New Roman", Serif;
+    font-family: "Times New Roman", Georgia, Serif;
     /*font-family: Consolas, "Lucida Console", Monospace;*/ 
     /*font-family: Calibri, Arial, Sans-Serif;*/
     font-size: 100%;
@@ -501,3 +501,43 @@ a.zoom-in-link:hover {
     -webkit-tab-size: 2;
     tab-size: 2;
 }
+/*
+ * 
+ */
+.ui-button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: .75em;
+    margin: 0 0 0.3em 0;
+    min-width: 85px;
+    background: #eee;
+    background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* W3C */
+    border: solid 1px #bbb;
+    border-radius: 3px;
+    box-shadow: 0px 0px 3px 1px #ccc;
+}
+.ui-button.ui-state-hover {
+    border-color: #999;
+    color: #222;
+    box-shadow: 0px 0px 3px 1px #bbb;
+}
+.ui-button.ui-state-active {
+    color: #444;
+    box-shadow: inset 1px 1px 3px 1px #bbb;
+}
+.ui-button .ui-button-text {
+    line-height: 1em;
+    font-weight: bold;
+}
+.ui-menu {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: .75em;
+    position: absolute;
+    width: 80px;
+    z-index: 102;
+}
+/**/
