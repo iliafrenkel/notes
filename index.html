@@ -44,7 +44,7 @@
                 <div class="drop-target above"></div>
             <!-- /ko -->
             <div class="editor" style="position:relative">
-            <div class="drag-handler" title="Drag to reorder">&nbsp;</div>
+            <div class="drag-handler" title="Drag to re-order">&nbsp;</div>
             <div class="content" data-bind="html: contentFormatted, event: {click: startEdit}, style: {visibility: isInEdit() ? 'hidden' : 'visible'}"></div>
             <textarea class="content" placeholder="Just start typing" data-bind="visible: isInEdit, text: content, value: content, valueUpdate: 'afterkeydown', hasfocus: isInEdit, event: {keydown: onUserInput}"></textarea>
             </div>
@@ -82,7 +82,7 @@
                         <li><a href="javascript:void(0)" data-bind="click: printPreview"><span class="ui-icon ui-icon-print"></span>Print</a></li>
                         <li><a href="javascript:void(0)" data-bind="click: showHelpDialog"><span class="ui-icon ui-icon-info"></span>Help</a></li>
                         <li class="ui-state-disabled"></li>
-                        <li><a href="{{logout_url}}" style="font-weight:bold">Sign Out</a></li>
+                        <li><a href="{{logout_url}}" style="font-weight:bold"><span class="ui-icon ui-icon-arrowthick-1-w"></span>Sign Out</a></li>
                     </ul>
                 </div>
             </div>
