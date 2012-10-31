@@ -34,50 +34,6 @@
             var app = new NotesApp();
             $(document).ready(function() {
                 app.init();
-                $("#current-style").css({width:"80px"})
-                    .button({
-                        text: true,
-                        icons: {
-                            primary: "ui-icon-script",
-                            secondary: "ui-icon-triangle-1-s"
-                        }
-                    })
-                    .click(function(){
-                        var menu = $( this ).next().toggle().position({
-                            my: "left top",
-                            at: "left bottom",
-                            of: this
-                        });
-                        $( document ).one( "click", function() {
-                            menu.hide();
-                        });
-                        return false;
-                    })
-                    .buttonset()
-                    .next()
-                    .hide()
-                    .menu();
-                $("#main-menu .button-undo").button({
-                    icons: {
-                        primary: "ui-icon-arrowrefresh-1-s"
-                    }
-                });
-                $("#main-menu .button-print").button({
-                    icons: {
-                        primary: "ui-icon-print"
-                    }
-                });
-                $("#main-menu .button-help").button({
-                    icons: {
-                        primary: "ui-icon-info"
-                    }
-                });
-                $("#main-menu .button-export").button({
-                    icons: {
-                        primary: "ui-icon-extlink"
-                    }
-                });
-                
             });
         </script>
         <!-- NOTES TEMPLATE -->
@@ -123,18 +79,23 @@
                     <a href="javascript:void(0)" class="button" data-bind="click: exportNotes">Export...</a>
                     <a href="javascript:void(0)" class="button" data-bind="click: showHelpDialog">Help</a-->
                     <button class="button-undo" data-bind="click: undo, disable: deletedNotes().length <= 0, css: {'ui-button-disabled': deletedNotes().length <= 0, 'ui-state-disabled': deletedNotes().length <= 0}">Undo</button>
-                    <button class="button-print" data-bind="click: printPreview">Print...</button>
+                    <!--button class="button-print" data-bind="click: printPreview">Print...</button>
                     <button class="button-export" data-bind="click: exportNotes">Export...</button>
                     <button class="button-help" data-bind="click: showHelpDialog">Help</button>
-                    <button id="current-style">Serif</button>
-                    <ul>
-                        <li><a href="javascript:void(0)" style="font-family:Serif" onclick="app.setActiveStyleSheet('serif');$('#current-style').button('option', 'label', 'Serif');">Serif</a></li>
-                        <li><a href="javascript:void(0)" style="font-family:Sans-Serif" onclick="app.setActiveStyleSheet('sans');$('#current-style').button('option', 'label', 'Sans');">Sans-Serif</a></li>
-                        <li><a href="javascript:void(0)"  style="font-family:Monospace"onclick="app.setActiveStyleSheet('mono');$('#current-style').button('option', 'label', 'Mono');">Monospace</a></li>
-                    </ul>
+                    <button class="button-settings" data-bind="click: showSettingsDialog">Settings</button>
                     <span id="user_info">
                         {{user_nickname}} (<a href="{{logout_url}}">logout</a>)
-                    </span>
+                    </span-->
+                    <button class="button-user">{{user_nickname}}</button>
+                    <ul>
+                        <li><a href="javascript:void(0)" data-bind="click: showSettingsDialog"><span class="ui-icon ui-icon-gear"></span>Settings</a></li>
+                        <li><a href="javascript:void(0)" data-bind="click: exportNotes"><span class="ui-icon ui-icon-extlink"></span>Export</a></li>
+                        <li><a href="javascript:void(0)" data-bind="click: printPreview"><span class="ui-icon ui-icon-print"></span>Print</a></li>
+                        <li class="ui-state-disabled"></li>
+                        <li><a href="javascript:void(0)" data-bind="click: showHelpDialog"><span class="ui-icon ui-icon-info"></span>Help</a></li>
+                        <li class="ui-state-disabled"></li>
+                        <li><a href="{{logout_url}}">Sign Out</a></li>
+                    </ul>
                 </div>
             </div>
             <div id="breadcrumbs" data-bind="template: {name: 'breadcrumbs-template', data: app.listView.rootNote}">
@@ -146,7 +107,7 @@
             </div>
         </div>
         <div id="footer">
-            &copy; Ilia Frenkel, 2012.&nbsp;|&nbsp;Build on <a href="https://developers.google.com/appengine/">Google App Engine</a>.{{admin_link}}
+            &copy; Ilia Frenkel, 2012.{{admin_link}}
         </div>
         <!-- COMMON DIALOGUES -->
         <div id="help-dialog" title="Help">
@@ -169,15 +130,25 @@
                             <li>You can expand/collapse any note to concentrate on one thing at a time</li>
                             <li>Even better, you can &ldquo;zoom in&rdquo; to note. Go on, try it. Just click on a gray circle to the left of a note.</li>
                             <li>You can use keyboard shortcuts for most of the actions</li>
+                            <li>Export notes as plain text</li>
+                            <li>Printing current view</li>
                         </ul>
                     </p>
                     <p>
-                        Plans for future include:
+                        Currently working on:
                         <ul>
-                            <li>Export notes to a file</li>
-                            <li>Printing current view</li>
                             <li>Change look and feel by choosing font and background</li>
+                            <li>More useful error messages</li>
                         </ul>
+                    </p>
+                    <p style="margin-top:2em">
+                        <div id="help-thanks">
+                            Thanks to:<br><br>
+                            <a href="https://developers.google.com/appengine/" title="Powered by Google App Engine"><img src="https://developers.google.com/appengine/images/appengine-noborder-120x30.gif" alt="Powered by Google App Engine" /></a>
+                            <a href="http://jquery.com" title="Powered by jQuery"><img src="/res/img/jquery-logo.png" alt="Powered by jQuery" /></a>
+                            <a href="http://jqueryui.com" title="Powered by jQuery UI"><img src="/res/img/jquery-ui-logo.png" alt="Powered by jQuery UI" /></a>
+                            <a href="http://knockoutjs.com" title="Powered by KnockoutJS"><img src="/res/img/ko-logo.png" alt="Powered by KnockoutJS" /></a>
+                        </div>
                     </p>
                 </div>
                 
@@ -290,6 +261,26 @@
         
         <div id="export-dialog" title="Export">
             <textarea id="export-content" style="width:96%;height: 96%" title="Just copy the text from here and paste it in your favourite editor"></textarea>
+        </div>
+        
+        <div id="settings-dialog" title="Settings">
+            <div class="dialog-group">
+                <label class="dialog-label" for="currentStyle">Font style:</label>
+                <button id="current-style" name="currentStyle">Serif</button>
+                <ul>
+                    <li><a href="javascript:void(0)" style="font-family:Serif" onclick="app.setActiveStyleSheet('serif');$('#current-style').button('option', 'label', 'Serif');">Serif</a></li>
+                    <li><a href="javascript:void(0)" style="font-family:Sans-Serif" onclick="app.setActiveStyleSheet('sans');$('#current-style').button('option', 'label', 'Sans');">Sans-Serif</a></li>
+                    <li><a href="javascript:void(0)"  style="font-family:Monospace"onclick="app.setActiveStyleSheet('mono');$('#current-style').button('option', 'label', 'Mono');">Monospace</a></li>
+                </ul>
+            </div>
+            <div class="dialog-group">
+                <label class="dialog-label">Font size:</label>
+                Not implemented yet.
+            </div>
+            <div class="dialog-group">
+                <label class="dialog-label">Background:</label>
+                Not implemented yet.
+            </div>
         </div>
         <!-- END OF COMMON DIALOGUES -->
     </body>

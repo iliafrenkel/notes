@@ -59,6 +59,7 @@ a.tag-link:hover {
     background-color: #ddd;
     color: #444;
     font-family: Arial, Helvetica, sans-serif;
+    z-index: 110;
 }
 #main-menu span.title {
     color: rgba(220,220,220,0.1);
@@ -437,7 +438,7 @@ a.zoom-in-link:hover {
 }
 .common-dialog .ui-dialog-buttonpane {
     border: none;
-    padding: 0;
+    padding: 0 10px 10px 0;
 }
 .common-dialog .ui-button {
     font-family: Helvetica, Arial, Sans-Serif;
@@ -461,6 +462,15 @@ a.zoom-in-link:hover {
 .common-dialog .ui-button.ui-state-active {
     color: #444;
     box-shadow: inset 1px 1px 3px 1px #bbb;
+}
+.common-dialog .dialog-group {
+    margin: 10px 2px;
+}
+.common-dialog .dialog-label {
+    font-weight: bold;
+    padding: 2px 4px;
+    min-width: 85px;
+    display: inline-block;
 }
 /**/
 /*
@@ -487,6 +497,17 @@ a.zoom-in-link:hover {
     background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
     background: linear-gradient(to bottom,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 );
+}
+#help-thanks {
+    text-align: center;
+    font-weight: bold;
+}
+#help-thanks a, #help-thanks a:visited {
+    opacity: .6;
+    margin: 0 10px;
+}
+#help-thanks a:hover {
+    opacity: 1;
 }
 /**/
 /*
@@ -537,7 +558,9 @@ a.zoom-in-link:hover {
     font-family: Arial, Helvetica, sans-serif;
     font-size: .75em;
     position: absolute;
-    width: 80px;
-    z-index: 102;
+    box-shadow: 0px 0px 3px 1px #bbb;
+}
+.ui-menu .ui-menu-item a {
+    color: #333;
 }
 /**/

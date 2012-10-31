@@ -95,6 +95,67 @@ function NotesApp() {
             height: 400
         });
         
+        $("#settings-dialog").dialog({
+            autoOpen: false,
+            buttons: [{
+                text: "Close",
+                click: function(){$(this).dialog("close");}
+            }],
+            modal: false,
+            resizable: true,
+            dialogClass: "common-dialog",
+            width: 400,
+            height: 300
+        });
+        $("#current-style").css({width:"80px"})
+        .button({
+            text: true,
+            icons: {
+                primary: "ui-icon-script",
+                secondary: "ui-icon-triangle-1-s"
+            }
+        })
+        .click(function(){
+            var menu = $( this ).next().toggle().width(80).position({
+                my: "left top",
+                at: "left bottom",
+                of: this
+            });
+            $( document ).one( "click", function() {
+                menu.hide();
+            });
+            return false;
+        })
+        .next()
+        .hide()
+        .menu();
+
+        $("#main-menu .button-undo").button({
+            icons: {
+                primary: "ui-icon-arrowrefresh-1-s"
+            }
+        });
+        $("#main-menu .button-user").button({
+            icons: {
+                primary: "ui-icon-person",
+                secondary: "ui-icon-triangle-1-s"
+            }
+        })
+        .click(function(){
+            var menu = $( this ).next().toggle().width(80).position({
+                my: "right top",
+                at: "right bottom",
+                of: this
+            });
+            $( document ).one( "click", function() {
+                menu.hide();
+            });
+            return false;
+        })
+        .next()
+        .hide()
+        .menu();
+
         //Start regular server sync
         setInterval(self.syncWithServer, 5000);
     };
@@ -133,7 +194,7 @@ function NotesApp() {
         $("#error-popup .error-message").text(errMsg);
         $("#error-popup").show("slow");
         setTimeout(function(){$("#error-popup").hide("slow")}, 3000);
-    };    
+    };
     
     self.searchTag = function(tag) {
         self.showErrorDialog("You tried to search for notes with '"+tag+"' tag. Unfortunately this function is not implemented yet.");
@@ -170,6 +231,10 @@ function NotesApp() {
                 if(a.getAttribute("title") == title) a.disabled = false;
             }
         }
+    };
+    
+    self.showSettingsDialog = function() {
+        $("#settings-dialog").dialog("open");
     };
     
     return self;

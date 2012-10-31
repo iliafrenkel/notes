@@ -17,6 +17,7 @@
 import webapp2
 from google.appengine.runtime import DeadlineExceededError
 from google.appengine.api import datastore_errors
+from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 from google.appengine.api import namespace_manager
 from google.appengine.ext import db
 from models.note import Note
@@ -226,3 +227,7 @@ class NoteController(webapp2.RequestHandler):
             self.response.clear()
             self.response.set_status(500)
             self.response.out.write("This operation could not be completed in time...")
+        except CapabilityDisabledError:
+            self.response.clear()
+            self.response.set_status(503)
+            self.response.out.write("Scheduled maintenance. Application is in read-only mode.")
