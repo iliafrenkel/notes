@@ -23,17 +23,30 @@
 function NotesApp() {
     var self = this;
 
-    self.rootNote     = null;
-    self.listView     = null;
-    self.deletedNotes = ko.observableArray([]);
+    /**
+     * Main application properties. 
+     */
+    self.rootNote     = null; //reference to the "virtual" top-most note
+    self.listView     = null; //reference to the main view
+    self.deletedNotes = ko.observableArray([]); //array of deleted notes that
+                                                //is used as stack for undo
     
+    /**
+     * @method
+     * Initialises instance if Notes application.
+     *   1. Creates instances of root note and main view and applyes knockoutjs
+     *      bindings;
+     *   2. Loads all notes from the server;
+     *   3. Initialises jQuery UI dialogues;
+     *   4. Setups regular sync with the server.
+     */
     self.init = function() {
-        // Create the root note and initialise bindings
+        // Create the root note and initialise bindings.
         self.rootNote = new NoteModel({content:"Home"});
         self.listView = new NotesListViewModel(self.rootNote)
         ko.applyBindings(self, document.getElementById("content"));
         
-        // Load notes from the server
+        // Load notes from the server.
         $("#root").mask("Loading notes...", 300);
         $.getJSON("/note/list/", function(data){
             self.rootNote.loadSubnotes(data);
@@ -43,10 +56,12 @@ function NotesApp() {
             }
         })
         .error(function(res) {
-            alert("Error occured while loading notes from the server.")
+            $("#root").unmask();
+            app.showErrorPopup("Error occured while loading notes from the server.");
         });
         
-        // Setup global keyboard shortcuts
+        // Setup global keyboard shortcuts.
+        // numpad '+': create new note
         $('body').on('keydown', function(event){
             if (event.which==107) {
                 self.rootNote.addSubnote().startEdit();
@@ -55,7 +70,8 @@ function NotesApp() {
             return true;
         });
         
-        // Initialise common dialogues
+        // Initialise common dialogues.
+        // Help dialogue
         $("#help-dialog").dialog({
             autoOpen: false,
             buttons: [{
@@ -70,6 +86,7 @@ function NotesApp() {
         });
         $("#help-tabs").tabs();
 
+        // Error dialogue
         $("#error-dialog").dialog({
             autoOpen: false,
             buttons: [{
@@ -82,6 +99,7 @@ function NotesApp() {
             width: 400
         });
         
+        // Export dialogue
         $("#export-dialog").dialog({
             autoOpen: false,
             buttons: [{
@@ -95,6 +113,7 @@ function NotesApp() {
             height: 400
         });
         
+        // Settings dialogue
         $("#settings-dialog").dialog({
             autoOpen: false,
             buttons: [{
@@ -107,29 +126,31 @@ function NotesApp() {
             width: 400,
             height: 300
         });
+        // Font style dropdown
         $("#current-style").css({width:"80px"})
-        .button({
+        .button({ //button with triangle on the right
             text: true,
             icons: {
                 primary: "ui-icon-script",
                 secondary: "ui-icon-triangle-1-s"
             }
         })
-        .click(function(){
+        .click(function(){//show dropdown list on click
             var menu = $( this ).next().toggle().width(80).position({
                 my: "left top",
                 at: "left bottom",
                 of: this
             });
-            $( document ).one( "click", function() {
+            $( document ).one( "click", function() { //close dropdown
                 menu.hide();
             });
             return false;
         })
-        .next()
-        .hide()
-        .menu();
+        .next() //dropdown markup must be straight after button markup
+        .hide() //initially hide the dropdown
+        .menu(); //initialise jQuery UI menu control
 
+        // Main menu buttons
         $("#main-menu .button-undo").button({
             icons: {
                 primary: "ui-icon-arrowrefresh-1-s"
@@ -160,6 +181,10 @@ function NotesApp() {
         setInterval(self.syncWithServer, 5000);
     };
     
+    /**
+     * @method
+     * Restores previously deleted note (if any).
+     */
     self.undo = function() {
         if (self.deletedNotes().length > 0) {
             var note = self.deletedNotes.pop();
@@ -168,6 +193,13 @@ function NotesApp() {
         }
     };
     
+    /**
+     * @method
+     * Synchronises with the server.
+     * At the moment only two actions are synchronised - create and update.
+     * Delete, restore and move actions are called straight away. This introduces
+     * a few problems, but I will deal with them later.
+     */
     self.syncWithServer = function() {
         if (!self.rootNote) return;
         function sync_note(note) {
@@ -181,38 +213,64 @@ function NotesApp() {
         $.each(self.rootNote.subnotes(), function(idx,val){sync_note(val)});
     };
     
+    /**
+     * @method
+     * Open Help dialogue.
+     */
     self.showHelpDialog = function() {
         $("#help-dialog").dialog("open");
     };
     
+    /**
+     * @method
+     * Open Error dialogue.
+     * @param {string} errMsg Error message to show.
+     */
     self.showErrorDialog = function(errMsg) {
         $("#error-dialog .error-message").text(errMsg);
         $("#error-dialog").dialog("open");
     };
 
+    /**
+     * @method
+     * Shows small popup box with error message at the top and the hides it.
+     * @param {string} errMsg Error message to show.
+     */
     self.showErrorPopup = function(errMsg) {
         $("#error-popup .error-message").text(errMsg);
         $("#error-popup").show("slow");
         setTimeout(function(){$("#error-popup").hide("slow")}, 3000);
     };
     
+    /**
+     * @method
+     * Stub for "search by tag" functionality.
+     * @param {string} tag Tag to search by.
+     */
     self.searchTag = function(tag) {
         self.showErrorDialog("You tried to search for notes with '"+tag+"' tag. Unfortunately this function is not implemented yet.");
     };
 
+    /**
+     * @method
+     * Show print preview (at least in Chrome). In other browsers will probably
+     * open Print dialogue.
+     */
     self.printPreview = function() {
     	window.print();
     };
     
+    /**
+     * @method
+     * Show Export dialogue.
+     */
     self.exportNotes = function() {
         function print_note(note, indent) {
             var res = " * " + note.content();
             if (note.hasSubnotes()) {
-                //res = res + "\n";
                 $.each(note.subnotes(), function(idx, val){
                     res = res + "\n" + indent +print_note(val,indent+"\t");
                 });
-                //res = res + "\n";
             }
             return res;
         };
@@ -223,6 +281,11 @@ function NotesApp() {
         $("#export-content").select();        
     };
     
+    /**
+     * @method
+     * Sets active CSS style sheet by title. The idea is described here:
+     * http://www.alistapart.com/articles/alternate/
+     */
     self.setActiveStyleSheet = function(title) {
         var i, a, main;
         for(i=0; (a = document.getElementsByTagName("link")[i]); i++) {
@@ -233,6 +296,10 @@ function NotesApp() {
         }
     };
     
+    /**
+     * @method
+     * Show Settings dialogue.
+     */
     self.showSettingsDialog = function() {
         $("#settings-dialog").dialog("open");
     };

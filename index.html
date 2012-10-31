@@ -74,27 +74,15 @@
             <div id="main-menu">
                 <span style="float:left;" class="title">Notes</span>
                 <div style="float:right;margin-right: 10px;line-height: 28px;">
-                    <!--a href="javascript:void(0)" class="button" data-bind="text: 'Undo (' + deletedNotes().length + ')', click: undo, css: {disabled: deletedNotes().length <= 0}">Undo</a>
-                    <a href="javascript:void(0)" class="button" data-bind="click: printPreview">Print...</a>
-                    <a href="javascript:void(0)" class="button" data-bind="click: exportNotes">Export...</a>
-                    <a href="javascript:void(0)" class="button" data-bind="click: showHelpDialog">Help</a-->
                     <button class="button-undo" data-bind="click: undo, disable: deletedNotes().length <= 0, css: {'ui-button-disabled': deletedNotes().length <= 0, 'ui-state-disabled': deletedNotes().length <= 0}">Undo</button>
-                    <!--button class="button-print" data-bind="click: printPreview">Print...</button>
-                    <button class="button-export" data-bind="click: exportNotes">Export...</button>
-                    <button class="button-help" data-bind="click: showHelpDialog">Help</button>
-                    <button class="button-settings" data-bind="click: showSettingsDialog">Settings</button>
-                    <span id="user_info">
-                        {{user_nickname}} (<a href="{{logout_url}}">logout</a>)
-                    </span-->
                     <button class="button-user">{{user_nickname}}</button>
                     <ul>
                         <li><a href="javascript:void(0)" data-bind="click: showSettingsDialog"><span class="ui-icon ui-icon-gear"></span>Settings</a></li>
                         <li><a href="javascript:void(0)" data-bind="click: exportNotes"><span class="ui-icon ui-icon-extlink"></span>Export</a></li>
                         <li><a href="javascript:void(0)" data-bind="click: printPreview"><span class="ui-icon ui-icon-print"></span>Print</a></li>
-                        <li class="ui-state-disabled"></li>
                         <li><a href="javascript:void(0)" data-bind="click: showHelpDialog"><span class="ui-icon ui-icon-info"></span>Help</a></li>
                         <li class="ui-state-disabled"></li>
-                        <li><a href="{{logout_url}}">Sign Out</a></li>
+                        <li><a href="{{logout_url}}" style="font-weight:bold">Sign Out</a></li>
                     </ul>
                 </div>
             </div>
@@ -139,6 +127,7 @@
                         <ul>
                             <li>Change look and feel by choosing font and background</li>
                             <li>More useful error messages</li>
+                            <li>Offline mode</li>
                         </ul>
                     </p>
                     <p style="margin-top:2em">
@@ -213,6 +202,21 @@
                 </div>
 
                 <div id="help-releasenotes" style="font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;font-size:11px;letter-spacing: -1px;line-height: 14px">
+                    <h3>31-Oct-2012</h3>
+                    <p>
+                        New features:
+                        <ul>
+                            <li>Redesigned top toolbar</li>
+                            <li>Printing</li>
+                            <li>Export notes as plaint text</li>
+                            <li>Settings dialogue - user can choose between three font types</li>
+                        </ul>
+                        Fixes:
+                        <ul>
+                            <li>Maintenance periods on Google App Engine are handled gracefully now</li>
+                        </ul>
+                    </p>
+                    <div style="width:75%;margin: 0 auto;border-top: dotted 1px #ccc"></div>
                     <h3>29-Oct-2012</h3>
                     <p>
                         New features:
